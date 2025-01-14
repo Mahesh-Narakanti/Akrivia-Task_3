@@ -1,0 +1,27 @@
+<div class="card">
+    <div class="card-header bg-white mt-2">
+        <h5 class="mb-2">Files uploaded</h5>
+        <div class="d-flex gap-2 mt-3 mb-3">
+            <button class="btn btn-light border btn-sm me-2">Download all</button>
+            <button class="btn btn-violet btn-sm">
+                <i class="bi bi-upload"></i>
+                Upload
+            </button>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" /></th>
+                    <th>File Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Use *ngFor to loop through the files and display them -->
+                <tr *ngFor="let file of files">
+                    <td><input type="checkbox" /></td>
+                    <td>{{ file.fileName }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

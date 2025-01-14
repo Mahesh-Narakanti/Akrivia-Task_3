@@ -1,0 +1,100 @@
+import { Component, OnInit } from '@angular/core';
+import { user } from 'src/app/core/interfaces/user';
+import { AuthService } from 'src/app/core/services/auth.service';
+
+declare global {
+  interface Window {
+    bootstrap: any;
+  }
+}
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
+})
+export class DashboardComponent implements OnInit {
+  userData: { id?: string; profile_pic?: string; username?: string } = {};
+  selectedFile: File | null = null;
+
+  constructor(private auth: AuthService) {
+    this.auth.getUser().subscribe({
+      next: (response) => {
+        this.userData.id = response.id;
+        this.userData.profile_pic = response.thumbnail;
+        this.userData.username = response.username;
+        console.log("here"+response.thumbnail);
+      },
+    });
+  }
+
+  ngOnInit(): void {}
+
+  updateProfile(): void {
+    this.openModal(); // Open the file upload modal when "Update Profile" is clicked
+  }
+
+  // Open the modal
+  openModal() {
+    const modal = new window.bootstrap.Modal(
+      document.getElementById('fileUploadModal') as HTMLElement
+    );
+    modal.show();
+  }
+
+  // Handle file selection
+  onFileSelected(event: any) {
+    this.selectedFile = event.target.files[0];
+  }
+
+  // Handle drag over event (for drag-and-drop)
+  onDragOver(event: DragEvent) {
+    event.preventDefault(); // Prevent default behavior to allow dropping
+  }
+
+  // Handle drag leave event
+  onDragLeave() {
+    // Optional: Reset border or show effects on drag leave
+  }
+
+  // Handle drop event for drag-and-drop
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (file) {
+      this.selectedFile = file;
+      (document.getElementById('fileInput') as HTMLInputElement).files =
+        event.dataTransfer.files;
+    }
+  }
+
+  // Handle file upload
+  uploadFile() {
+    if (this.selectedFile) {
+      console.log('Uploading file:', this.selectedFile);
+      this.uploadProfilePicture(this.selectedFile);
+    } else {
+      alert('Please select a file to upload.');
+    }
+  }
+
+  // Upload the profile picture
+  uploadProfilePicture(file: File): void {
+    this.auth.uploadFile(file).subscribe({
+      next: (response) => {
+        this.userData.profile_pic = response.thumbnailUrl;
+        console.log(response.thumbnailUrl);
+        this.auth.profileImage(response.thumbnailUrl, response.profilePicUrl);
+        alert('Profile picture updated successfully!');
+      },
+      error: () => {
+        alert('Error updating profile picture');
+      },
+    });
+  }
+
+  // Logout logic
+  logout(): void {
+    // Implement logout logic here
+  }
+}

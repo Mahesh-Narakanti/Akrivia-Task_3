@@ -1,0 +1,349 @@
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">Inventory Movement</h5>
+                <small class="text-muted">number of Vendors</small>
+            </div>
+            <div *ngIf="toggleView === 'viewAll'" >
+                <button class="btn btn-light border btn-sm me-2" (click)="openCartModal()">
+                    <i class="bi bi-cart-fill"></i> Move to Cart
+                </button>
+                <button class="btn btn-light border btn-sm me-2" (click)="downloadAll()">
+                    <i class="bi bi-download"></i> Download All
+                </button>
+                <button class="btn btn-light border btn-sm me-2" (click)="openImportModal()">
+                    <i class="bi bi-upload"></i> Import
+                </button>
+                <button class="btn btn-violet btn-sm" (click)="openAddProductModal()">
+                    <i class="bi bi-plus-circle"></i> Add Product
+                </button>
+            </div>
+        </div>
+
+        <!-- Toggle and Filters -->
+        <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+            <div class="btn-group rounded">
+                <button class="btn btn-light active border border-secondary btn-sm" (click)="toggleViewSelection('viewAll')"> View All</button>
+                <button class="btn btn-light border border-secondary btn-sm" (click)="toggleViewSelection('cart')"> Cart</button>
+            </div>
+            <div class="d-flex align-items-center">
+                    <input type="text" class="form-control me-2" style="height: 80%; width: 350px;" placeholder="Search..."
+                        (input)="onSearchChange($event)" />
+
+                <div class="dropdown">
+                    <button class="btn btn-light border btn-sm d-flex align-items-center gap-2" type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <!-- Loop through columns and create checkboxes -->
+                        <li *ngFor="let column of filterColumns">
+                            <div class="form-check">
+                                <!-- Directly bind change event to update selectedFilterColumns -->
+                                <input class="form-check-input" type="checkbox" [value]="column.value"
+                                    (change)="toggleFilterSelection($event, column.value)">
+                                <label class="form-check-label">{{ column.label }}</label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Table -->
+        <table class="table table-hover">
+            <thead *ngIf="toggleView === 'viewAll'" >
+                <tr>
+                    <th><input type="checkbox" /></th>
+                    <th>Product Name</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Vendors</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody *ngIf="toggleView === 'viewAll'">
+                <tr *ngFor="let product of filteredProducts()">
+                    <td><input type="checkbox" (change)="toggleProductSelection($event, product)" /></td>
+                    <td>
+                        <img [src]="product.product_image" alt="" class="rounded-circle me-2" />
+                        <span *ngIf="!isEditMode(product)">{{ product.product_name }}</span>
+                        <input *ngIf="isEditMode(product)" [(ngModel)]="product.product_name" class="form-control" />
+                    </td>
+                    <td>
+                        <span *ngIf="!isEditMode(product)" class="badge"
+                            [ngStyle]="{ color: product.status === '1' ? 'green' : 'red' }">
+                            {{ product.status === '1' ? 'Active' : 'Inactive' }}
+                        </span>
+                        <select *ngIf="isEditMode(product)" [(ngModel)]="product.status" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span *ngIf="!isEditMode(product)">{{ product.category_name }}</span>
+                        <select *ngIf="isEditMode(product)" [(ngModel)]="product.category" class="form-control">
+                            <option *ngFor="let category of categories" [ngValue]="category">
+                                {{ category.category_name }}
+                            </option>
+                        </select>
+
+                    </td>
+                    <td>
+                        <span *ngIf="!isEditMode(product)">
+                            <span class="badge bg-light text-dark" *ngFor="let vendor of product.vendors">{{ vendor.vendor_name
+                                }}</span>
+                        </span>
+                        <div *ngIf="isEditMode(product)">
+                            <div>
+                                <h6>Select Vendors</h6>
+                                <div *ngFor="let vendor of vendors">
+                                    <div class="form-check">
+                                        <!-- Custom event binding without ngModel -->
+                                        <input class="form-check-input" type="checkbox" [value]="vendor.vendor_id"
+                                            [checked]="isVendor(vendor, product)"
+                                            (change)="toggleVendorSelection($event, vendor, product)">
+                                        <label class="form-check-label">
+                                            {{ vendor.vendor_name }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </td>
+                    <td>
+                        <span *ngIf="!isEditMode(product)">{{ product.quantity_in_stock }}</span>
+                        <input *ngIf="isEditMode(product)" [(ngModel)]="product.quantity_in_stock" class="form-control" />
+                    </td>
+                    <td>
+                        <span *ngIf="!isEditMode(product)">{{ product.unit_price }}</span>
+                        <input *ngIf="isEditMode(product)" [(ngModel)]="product.unit_price" class="form-control" />
+                    </td>
+                    <td>
+                        <button class="btn btn-light btn-sm" (click)="editProduct(product)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button *ngIf="isEditMode(product)" class="btn btn-light btn-sm" (click)="saveProduct(product)">
+                            <i class="bi bi-check"></i> Save
+                        </button>
+                        <button *ngIf="isEditMode(product)" class="btn btn-light btn-sm" (click)="cancelEdit(product)">
+                            <i class="bi bi-x"></i> Cancel
+                        </button>
+                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm" (click)="deleteProduct(product)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm me-1" (click)="downloadProductPDF(product)">
+                            <i class="bi bi-download"></i> 
+                        </button>
+
+                    </td>
+                </tr>
+            </tbody>
+            <thead *ngIf="toggleView === 'cart'">
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Vendor</th>
+                    <th>Quantity</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody *ngIf="toggleView === 'cart'">
+                <tr *ngFor="let item of cartIt">
+<td><img [src]="item.product_image" alt=""
+        class="rounded-circle me-2" />
+    <span>{{ item.product_name }}</span>
+</td>                    <td>{{ item.category }}</td>
+                    <td>
+                    
+                            <span class="badge bg-light text-dark" >{{ item.vendor_name
+                                }}</span>
+                        
+                    </td>
+                    <td>
+                        <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, -1)">-</button>
+                        <span class="quantity-display">{{ item.quantity }}</span> <!-- Quantity displayed in between -->
+                        <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, 1)">+</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-light btn-sm" (click)="removeFromCart(item)"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+        
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="d-flex justify-content-center mt-4">
+            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- modals -->
+<!-- Modal for Cart -->
+<div class="modal" tabindex="-1" *ngIf="isCartModalOpen">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cart</h5>
+                <button type="button" class="btn-close" (click)="closeCartModal()"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Created At</th>
+                            <th>Category</th>
+                            <th>Vendors</th>
+                            <th>Quantity</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of cartItems">
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.created_at }}</td>
+                            <td>{{ item.category_name }}</td>
+                            <td>
+                                <select [(ngModel)]="item.selected_vendor_name">
+                                    <option *ngFor="let vendor of item.vendors" [value]="vendor.vendor_id">
+                                        {{ vendor.vendor_name }}
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, -1)">-</button>
+                                <span class="quantity-display">{{ item.quantity }}</span>
+                                <!-- Quantity displayed in between -->
+                                <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, 1)">+</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-danger btn-sm" (click)="removeFromCart(item)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="closeCartModal()">Cancel</button>
+                <button class="btn btn-primary" (click)="moveToCart()">Move</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal" tabindex="-1" *ngIf="isAddProductModalOpen">
+    <div class="modal-dialog p-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Product</h5>
+                <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="addProductForm" (ngSubmit)="onSubmit()">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Product Name</label>
+                        <input type="text" id="productName" class="form-control" formControlName="product_name"
+                            required />
+                        <div
+                            *ngIf="addProductForm.get('product_name')?.invalid && addProductForm.get('product_name')?.touched">
+                            <small class="text-danger">Product name is required</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-control" id="status" formControlName="status">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select id="category" class="form-control" formControlName="category_name" required>
+                            <option value="" disabled selected>Select a category</option>
+                            <option *ngFor="let category of categories" [value]="category.category_id">{{
+                                category.category_name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="vendors" class="form-label">Vendors</label>
+                        <div class="form-check" *ngFor="let vendor of vendors">
+                            <input class="form-check-input" type="checkbox" [id]="'vendor_' + vendor.vendor_id"
+                                [value]="vendor.vendor_id" (change)="onVendorChange($event, vendor.vendor_id)"
+                                [checked]="isVendorSelected(vendor.vendor_id)">
+                            <label class="form-check-label" [for]="'vendor_' + vendor.vendor_id">
+                                {{ vendor.vendor_name }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" id="quantity" class="form-control" formControlName="quantity_in_stock"
+                            min="1" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="unitPrice" class="form-label">Unit Price</label>
+                        <input type="number" id="unitPrice" class="form-control" formControlName="unit_price" min="0"
+                            required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="productImage" class="form-label">Product Image</label>
+                        <input type="file" id="productImage" class="form-control" (change)="onFileSelect($event)"
+                            accept="image/*" />
+                        <div *ngIf="imageError" class="text-danger">
+                            <small>Only image files are allowed</small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="addProductForm.invalid">Add
+                            Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for Import -->
+<div class="modal" id="importModal" tabindex="-1"  *ngIf="isImportModalOpen">
+    <div class="modal-dialog imp-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Products</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="file" (change)="onFileChange($event)" accept=".xlsx, .xls, .csv" />
+                <div *ngIf="errorMessage" class="text-danger mt-2">{{ errorMessage }}</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeImportModal()">Close</button>
+                <button type="button" class="btn btn-primary" (click)="uploadData()">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="main-container bg-light">
+    <header class="bg-white d-flex justify-content-between align-items-center px-3 py-3 border-bottom shadow-sm">
+        <div class="logo">
+            <h4><i class="bi bi-box-seam me-2 text-primary"></i>Inventory Dashboard</h4>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <img [src]="userData.profile_pic || 'https://via.placeholder.com/40'" alt="Profile"
+                    class="rounded-circle me-2" />
+                <span>{{ userData.username }}</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                <li><button class="dropdown-item" (click)="updateProfile()">Update Profile</button></li>
+                <li><a class="dropdown-item" href="#">Logout</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Modal for File Upload -->
+    <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fileUploadModalLabel">Upload Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
+                        (drop)="onDrop($event)">
+                        <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
+                            accept="image/*">
+                        <p class="text-muted">Or drag and drop a file here</p>
+                        <button class="btn btn-success" (click)="uploadFile()">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4 bg-light">
+        <div class="row">
+            <div class="col-md-9">
+                <app-inventory></app-inventory>
+            </div>
+            <div class="col-md-3">
+                <app-bucket></app-bucket>
+            </div>
+        </div>
+    </div>
+</div>

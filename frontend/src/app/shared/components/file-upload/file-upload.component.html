@@ -1,0 +1,20 @@
+<!-- Modal for File Upload -->
+<div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fileUploadModalLabel">Upload Profile Picture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
+                    (drop)="onDrop($event)">
+                    <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
+                        accept="image/*">
+                    <p class="text-muted">Or drag and drop a file here</p>
+                    <button class="btn btn-success" (click)="uploadFile()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

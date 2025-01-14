@@ -1,0 +1,78 @@
+.btn-violet {
+    background-color: darkviolet;
+        color: white;
+        border: none;
+}
+/* Basic modal styles */
+.modal {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+
+}
+
+/* Increase the width of the modal */
+.modal-dialog {
+    position: relative;
+    width: 80%;
+    /* Set the width to 80% (you can adjust this value) */
+    max-width: 100%;
+    /* Ensure it does not exceed 100% of the screen */
+    margin: auto;
+    /* Center the modal */
+    top: 10%;
+    /* Adjust modal's vertical positioning */
+}
+.p-modal, .imp-modal{
+    width: 40%;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    margin-left: 10px;
+}
+
+.quantity-display {
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+.pagination-buttons button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination-buttons button {
+    padding: 0.25rem 0.75rem;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.d-flex.justify-content-between {
+    justify-content: space-between;
+}
