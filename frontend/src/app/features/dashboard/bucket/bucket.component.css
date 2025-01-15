@@ -3,3 +3,9 @@
     color: white;
     border: none;
 }
+.modal {
+    display: block !important;
+    /* Forces the modal to be visible */
+    z-index: 1050;
+    /* Ensure the modal is on top */
+}

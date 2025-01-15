@@ -2,8 +2,8 @@
     <div class="card-header bg-white mt-2">
         <h5 class="mb-2">Files uploaded</h5>
         <div class="d-flex gap-2 mt-3 mb-3">
-            <button class="btn btn-light border btn-sm me-2">Download all</button>
-            <button class="btn btn-violet btn-sm">
+            <button class="btn btn-light border btn-sm me-2" (click)="downloadAll()">Download all</button>
+            <button class="btn btn-violet btn-sm" (click)=" uploadFiles()">
                 <i class="bi bi-upload"></i>
                 Upload
             </button>
@@ -19,9 +19,63 @@
                 <!-- Use *ngFor to loop through the files and display them -->
                 <tr *ngFor="let file of files">
                     <td><input type="checkbox" /></td>
-                    <td>{{ file.fileName }}</td>
+                    <td (click)="showPreview(file.fileURL)" style="cursor: pointer; color: blue;">
+                        {{ getFileName(file.fileURL) }}</td>
                 </tr>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Modal for File Upload -->
+<div class="modal" id="fileUploadModal" aria-labelledby="fileUploadModalLabel" tabindex="-1" *ngIf="isUploadModalOpen">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fileUploadModalLabel">Upload Profile Picture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
+                    (drop)="onDrop($event)">
+                    <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
+                        accept="image/*">
+                    <p class="text-muted">Or drag and drop a file here</p>
+                    <button class="btn btn-success" (click)="uploadFile()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div *ngIf="isPreviewOpen" class="modal" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Preview</h5>
+                <button type="button" class="btn-close" aria-label="Close" (click)="closePreview()"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Conditionally render preview based on file type -->
+                <ng-container *ngIf="fileType === 'image'">
+                    <img [src]="selectedFileURL" alt="Image Preview" class="img-fluid" />
+                </ng-container>
+            
+                
+            
+                <ng-container *ngIf="fileType === 'video'">
+                    <video controls [src]="selectedFileURL" width="100%" height="400px">
+                        Your browser does not support the video tag.
+                    </video>
+                </ng-container>
+            
+                <ng-container *ngIf="fileType === 'other'">
+                    <p>This file cannot be previewed. You can <a [href]="selectedFileURL" target="_blank">download it</a> instead.
+                    </p>
+                </ng-container>
+            </div>
+        </div>
     </div>
 </div>
