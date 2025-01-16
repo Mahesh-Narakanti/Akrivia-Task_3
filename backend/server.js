@@ -8,11 +8,11 @@ const knex = require("knex")(knexConfig);
 const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const inventory = require("./routes/inventory");
-const fileRoute = require("./routes/files")
+const fileRoute = require("./routes/files");
 const cartRoute = require("./routes/cart");
 const productRoute = require("./routes/product");
-const validateToken=require("./middilewares/tokenValidation-middileware")
-const { decryptRequest, encryptResponse }=require("./middilewares/encryption-middileware")
+const validateToken = require("./middilewares/tokenValidation-middileware");
+
 // Initialize Objection.js with Knex
 Model.knex(knex);
 
@@ -32,7 +32,6 @@ app.use("/cart", cartRoute);
 app.get("/api/protected-data", validateToken, (req, res) => {
   res.json({ message: "This is protected data, token is valid." });
 });
-
 
 const PORT = 3000;
 app.listen(PORT, () => {

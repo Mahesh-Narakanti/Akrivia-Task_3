@@ -24,7 +24,7 @@ export class DashboardComponent implements OnInit {
         this.userData.id = response.id;
         this.userData.profile_pic = response.thumbnail;
         this.userData.username = response.username;
-        console.log("here"+response.thumbnail);
+        console.log("here: "+response.thumbnail);
       },
     });
   }

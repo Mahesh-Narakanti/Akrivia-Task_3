@@ -130,7 +130,7 @@
                         <input *ngIf="isEditMode(product)" [(ngModel)]="product.unit_price" class="form-control" />
                     </td>
                     <td>
-                        <button class="btn btn-light btn-sm" (click)="editProduct(product)">
+                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm" (click)="editProduct(product)">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button *ngIf="isEditMode(product)" class="btn btn-light btn-sm" (click)="saveProduct(product)">
