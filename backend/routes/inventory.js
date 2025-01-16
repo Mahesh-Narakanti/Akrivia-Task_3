@@ -14,12 +14,22 @@ router.get("/products", async (req, res) => {
     // Fetch products with pagination
     const products = await knex("products")
       .join("categories", "products.category_id", "=", "categories.category_id")
-      .leftJoin("product_to_vendor", "products.product_id", "=", "product_to_vendor.product_id")
-      .leftJoin("vendors", "product_to_vendor.vendor_id", "=", "vendors.vendor_id")
+      .leftJoin(
+        "product_to_vendor",
+        "products.product_id",
+        "=",
+        "product_to_vendor.product_id"
+      )
+      .leftJoin(
+        "vendors",
+        "product_to_vendor.vendor_id",
+        "=",
+        "vendors.vendor_id"
+      )
       .select("products.*", "categories.category_name", "vendors.vendor_name")
       .whereNot("products.status", "99")
-      .limit(limit)
-      .offset((page - 1) * limit); // Apply the pagination offset
+      .limit(20)
+      .offset((page - 1) *10); // Apply the pagination offset
 
     // Fetch total count of products for pagination
     const totalProducts = await knex("products")
@@ -27,25 +37,38 @@ router.get("/products", async (req, res) => {
       .count("product_id as count")
       .first();
 
-    const totalPages = Math.ceil(totalProducts.count / limit);
+    const totalPages = Math.floor(totalProducts.count / 20);
 
-    // Reduce the products and group vendors
-    const productsWithVendors = products.reduce((acc, product) => {
-      const { vendor_name, ...productData } = product;
-      const existingProduct = acc.find(item => item.product_id === productData.product_id);
-      if (existingProduct) {
-        existingProduct.vendors.push({ vendor_name });
-      } else {
-        acc.push({
-          ...productData,
-          vendors: [{ vendor_name }]
-        });
-      }
-      return acc;
-    }, []);
+    // Group vendors by product_id
+     const productsWithVendorsMap = {};
+
+     // Populate the map with products and associated vendors
+     products.forEach((product) => {
+       const { vendor_name, ...productData } = product;
+
+       // Check if the product is already in the map
+       if (productsWithVendorsMap[productData.product_id]) {
+         // Add vendor to the existing product's vendor list
+         productsWithVendorsMap[productData.product_id].vendors.push({
+           vendor_name,
+         });
+       } else {
+         // Otherwise, create a new product entry with a vendors array
+         productsWithVendorsMap[productData.product_id] = {
+           ...productData,
+           vendors: vendor_name ? [{ vendor_name }] : [],
+         };
+       }
+     });
+
+     // Convert the map to an array of products
+     const productsWithVendors = Object.values(productsWithVendorsMap).slice(
+       0,
+       10
+     );
 
     res.json({
-      products: productsWithVendors,
+      products:productsWithVendors,
       totalPages,
       currentPage: page,
     });

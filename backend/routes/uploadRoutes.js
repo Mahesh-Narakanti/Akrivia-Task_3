@@ -3,7 +3,8 @@ const AWS = require("aws-sdk");
 const sharp = require("sharp");
 const s3Utils = require("../aws/s3Utils"); // Importing the S3 utility from the new location
 const router = express.Router();
-
+const knexConfig = require("../mysql/knexfile");
+const knex = require("knex")(knexConfig);
 // Upload Route
 router.post("/", async (req, res) => {
   try {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { user } from 'src/app/core/interfaces/user';
 import { AuthService } from 'src/app/core/services/auth.service';
 
@@ -17,7 +18,7 @@ export class DashboardComponent implements OnInit {
   userData: { id?: string; profile_pic?: string; username?: string } = {};
   selectedFile: File | null = null;
 
-  constructor(private auth: AuthService) {
+  constructor(private auth: AuthService , private router:Router) {
     this.auth.getUser().subscribe({
       next: (response) => {
         this.userData.id = response.id;
@@ -96,5 +97,7 @@ export class DashboardComponent implements OnInit {
   // Logout logic
   logout(): void {
     // Implement logout logic here
+    sessionStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 }

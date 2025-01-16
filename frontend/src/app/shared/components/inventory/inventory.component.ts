@@ -23,10 +23,7 @@ export class InventoryComponent implements OnInit {
   cartItems: any[] = [];
   toggleView = 'viewAll';
   cartIt: any[] = [];
-  addProductForm: FormGroup;
   selectedVendors: number[] = []; // This array will hold the selected vendor IDs
-  selectedImage: File | null = null; // To hold the selected image file
-  imageError = false; // To show error message if file is not an image
   parsedProducts: any[] = []; // To store products parsed from the Excel file
   errorMessage: string | null = null;
   editModeMap: { [productId: number]: boolean } = {}; // Mapping to track edit mode state
@@ -40,7 +37,6 @@ export class InventoryComponent implements OnInit {
     private productService: ProductService,
     private fb: FormBuilder,
     private auth: AuthService,
-    private cdf: ChangeDetectorRef
   ) {
     this.loadProducts();
 
@@ -61,43 +57,11 @@ export class InventoryComponent implements OnInit {
         console.error('Error fetching vendors', err);
       },
     });
-
-    this.addProductForm = this.fb.group({
-      product_name: ['', Validators.required],
-      status: [1, Validators.required],
-      category_name: ['', Validators.required],
-      vendors: [[], Validators.required],
-      quantity_in_stock: [0, [Validators.required, Validators.min(1)]],
-      unit_price: [0, [Validators.required, Validators.min(0)]],
-      product_image: [null],
-    });
+    
   }
 
-  ngOnInit(): void {}
-
-  onVendorChange(event: any, vendorId: number): void {
-    if (event.target.checked) {
-      // If checked, add the vendor ID to the array
-      this.selectedVendors.push(vendorId);
-    } else {
-      // If unchecked, remove the vendor ID from the array
-      const index = this.selectedVendors.indexOf(vendorId);
-      if (index > -1) {
-        this.selectedVendors.splice(index, 1);
-      }
-    }
-
-    // Update the form control for vendors
-    this.addProductForm.patchValue({
-      vendors: this.selectedVendors,
-    });
-  }
-
-  // Check if a vendor is selected
-  isVendorSelected(vendorId: number): boolean {
-    return this.selectedVendors.includes(vendorId);
-  }
-
+  ngOnInit(): void { }
+  
   toggleProductSelection(event: any, product: any): void {
     if (event.target.checked) {
       this.selectedProducts.push(product);
@@ -111,6 +75,7 @@ export class InventoryComponent implements OnInit {
 
   openCartModal(): void {
     this.cartItems = this.selectedProducts.map((item) => ({
+      product_id:item.product_id,
       product_name: item.product_name, // Only take product name
       product_image: item.product_image, // Only take product image
       quantity: 0, // Set initial quantity to 0
@@ -144,6 +109,7 @@ export class InventoryComponent implements OnInit {
 
   moveToCart(): void {
     const itemsToSend = this.cartItems.map((item) => ({
+      product_id:item.product_id,
       product_name: item.product_name, // Product name
       product_image: item.product_image, // Product image URL
       quantity: item.quantity, // Quantity in the cart
@@ -213,74 +179,7 @@ export class InventoryComponent implements OnInit {
     this.isAddProductModalOpen = false; // Close modal
   }
 
-  onSubmit(): void {
-    if (this.addProductForm.valid) {
-      const payload = {
-        product_name: this.addProductForm.value.product_name,
-        status: this.addProductForm.value.status,
-        category_name: this.addProductForm.value.category_name,
-        vendors: this.addProductForm.value.vendors,
-        quantity_in_stock: this.addProductForm.value.quantity_in_stock,
-        unit_price: this.addProductForm.value.unit_price,
-        product_image: '',
-        full_image:''
-      };
-      console.log(payload);
-      // If an image is selected, upload it first and then proceed with the product submission
-      if (this.selectedImage) {
-        this.auth
-          .uploadFile(this.selectedImage)
-          .pipe(
-            map((response) => ({
-              thumbnailUrl: response.thumbnailUrl,
-              profilePicUrl: response.profilePicUrl, // Assuming profilePicUrl is part of the response
-            })),
-            switchMap((urls) => {
-              // Add the image URLs to the payload
-              payload.product_image = urls.thumbnailUrl;
-              payload.full_image = urls.profilePicUrl; // Set the full_image with the profilePicUrl from response
-
-              // Now make the API request with the updated payload
-              return this.productService.addProduct(payload);
-            })
-          )
-          .subscribe({
-            next: (response) => {
-              console.log('Product added successfully:', response);
-              this.closeAddProductModal();
-            },
-            error: (err) => {
-              console.error('Error adding product:', err);
-            },
-          });
-      } else {
-        // If no image is selected, proceed with the product submission without the image
-        this.productService.addProduct(payload).subscribe({
-          next: (response) => {
-            console.log('Product added successfully:', response);
-            this.closeAddProductModal();
-          },
-          error: (err) => {
-            console.error('Error adding product:', err);
-          },
-        });
-      }
-    }
-  }
-
-  onFileSelect(event: any): void {
-    const file: File = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      this.selectedImage = file;
-      this.imageError = false;
-      this.addProductForm.patchValue({ product_image: this.selectedImage });
-    } else {
-      this.imageError = true;
-      this.selectedImage = null;
-      this.addProductForm.patchValue({ product_image: null });
-    }
-  }
-
+ 
   openImportModal(): void {
     // Open the modal using NgbModal or any modal library you are using
     this.isImportModalOpen = true;
@@ -548,6 +447,7 @@ export class InventoryComponent implements OnInit {
         this.selectedFilterColumns.splice(index, 1);
       }
     }
+
     console.log('Selected Filter Columns: ', this.selectedFilterColumns);
   }
   // Method to filter products based on the search query and selected columns
@@ -557,8 +457,30 @@ export class InventoryComponent implements OnInit {
     }
 
     return this.products.filter((product) => {
+
+      if (this.selectedFilterColumns.length === 0) {
+        return this.filterColumns.some((filterColumn) => {
+          const column = filterColumn.value;
+          const valueToCheck = product[column];
+          if (column === 'vendors') {
+            // If 'vendors' column is selected, check if any vendor's name matches the search query
+            return product.vendors.some(
+              (vendor:any) =>
+                vendor?.vendor_name
+                  ?.toLowerCase()
+                  .includes(this.searchQuery.toLowerCase()) ?? false
+            );
+          } else {
+            // Otherwise, check if the column's value contains the search query
+            return valueToCheck
+              .toString()
+              .toLowerCase()
+              .includes(this.searchQuery.toLowerCase());
+          }
+        });
+      }
       // Check if all selected columns match the search query
-      return this.selectedFilterColumns.every((column) => {
+      return this.selectedFilterColumns.some((column) => {
         const valueToCheck = product[column];
 
         if (column === 'vendors') {

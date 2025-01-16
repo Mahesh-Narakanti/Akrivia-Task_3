@@ -1,11 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-declare global {
-  interface Window {
-    bootstrap: any;
-  }
-}
+
 
 @Component({
   selector: 'app-file-upload',
@@ -14,15 +10,9 @@ declare global {
 })
 export class FileUploadComponent {
   selectedFile: File | null = null;
-
-  // Open the modal
-  openModal() {
-    const modal = new window.bootstrap.Modal(
-      document.getElementById('fileUploadModal') as HTMLElement
-    );
-    modal.show();
-  }
-
+  @Input() openFileModal: boolean = true; // Control modal visibility via parent
+  @Output() fileget = new EventEmitter<File>();
+  @Output() closeFileModal = new EventEmitter<void>();
   // Handle file selection
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
@@ -53,9 +43,15 @@ export class FileUploadComponent {
   uploadFile() {
     if (this.selectedFile) {
       console.log('Uploading file:', this.selectedFile);
+      this.fileget.emit(this.selectedFile);
       // Example: send the file to the server using Angular's HttpClient
     } else {
       alert('Please select a file to upload.');
     }
+  }
+
+  closeModal() {
+    this.openFileModal = false;
+    this.closeFileModal.emit
   }
 }

@@ -5,7 +5,7 @@
                 <h5 class="mb-0">Inventory Movement</h5>
                 <small class="text-muted">number of Vendors</small>
             </div>
-            <div *ngIf="toggleView === 'viewAll'" >
+            <div *ngIf="toggleView === 'viewAll'">
                 <button class="btn btn-light border btn-sm me-2" (click)="openCartModal()">
                     <i class="bi bi-cart-fill"></i> Move to Cart
                 </button>
@@ -24,16 +24,18 @@
         <!-- Toggle and Filters -->
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
             <div class="btn-group rounded">
-                <button class="btn btn-light active border border-secondary btn-sm" (click)="toggleViewSelection('viewAll')"> View All</button>
-                <button class="btn btn-light border border-secondary btn-sm" (click)="toggleViewSelection('cart')"> Cart</button>
+                <button class="btn btn-light active border border-secondary btn-sm"
+                    (click)="toggleViewSelection('viewAll')"> View All</button>
+                <button class="btn btn-light border border-secondary btn-sm" (click)="toggleViewSelection('cart')">
+                    Cart</button>
             </div>
             <div class="d-flex align-items-center">
-                    <input type="text" class="form-control me-2" style="height: 80%; width: 350px;" placeholder="Search..."
-                        (input)="onSearchChange($event)" />
+                <input type="text" class="form-control me-2" style="height: 80%; width: 350px;" placeholder="Search..."
+                    (input)="onSearchChange($event)" />
 
                 <div class="dropdown">
-                    <button class="btn btn-light border btn-sm d-flex align-items-center gap-2" type="button" id="dropdownMenuButton"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-light border btn-sm d-flex align-items-center gap-2" type="button"
+                        id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -54,7 +56,7 @@
     <div class="card-body">
         <!-- Table -->
         <table class="table table-hover">
-            <thead *ngIf="toggleView === 'viewAll'" >
+            <thead *ngIf="toggleView === 'viewAll'">
                 <tr>
                     <th><input type="checkbox" /></th>
                     <th>Product Name</th>
@@ -76,8 +78,8 @@
                     </td>
                     <td>
                         <span *ngIf="!isEditMode(product)" class="badge"
-                            [ngStyle]="{ color: product.status === '1' ? 'green' : 'red' }">
-                            {{ product.status === '1' ? 'Active' : 'Inactive' }}
+                            [ngStyle]="{ color: product.quantity_in_stock > 0 ? 'green' : 'red' }">
+                            {{ product.quantity_in_stock > 0 ? 'Available' : 'Out of stock' }}
                         </span>
                         <select *ngIf="isEditMode(product)" [(ngModel)]="product.status" class="form-control">
                             <option value="1">Active</option>
@@ -95,7 +97,8 @@
                     </td>
                     <td>
                         <span *ngIf="!isEditMode(product)">
-                            <span class="badge bg-light text-dark" *ngFor="let vendor of product.vendors">{{ vendor.vendor_name
+                            <span class="badge bg-light text-dark" *ngFor="let vendor of product.vendors">{{
+                                vendor.vendor_name
                                 }}</span>
                         </span>
                         <div *ngIf="isEditMode(product)">
@@ -119,7 +122,8 @@
                     </td>
                     <td>
                         <span *ngIf="!isEditMode(product)">{{ product.quantity_in_stock }}</span>
-                        <input *ngIf="isEditMode(product)" [(ngModel)]="product.quantity_in_stock" class="form-control" />
+                        <input *ngIf="isEditMode(product)" [(ngModel)]="product.quantity_in_stock"
+                            class="form-control" />
                     </td>
                     <td>
                         <span *ngIf="!isEditMode(product)">{{ product.unit_price }}</span>
@@ -135,11 +139,13 @@
                         <button *ngIf="isEditMode(product)" class="btn btn-light btn-sm" (click)="cancelEdit(product)">
                             <i class="bi bi-x"></i> Cancel
                         </button>
-                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm" (click)="deleteProduct(product)">
+                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm"
+                            (click)="deleteProduct(product)">
                             <i class="bi bi-trash"></i>
                         </button>
-                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm me-1" (click)="downloadProductPDF(product)">
-                            <i class="bi bi-download"></i> 
+                        <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm me-1"
+                            (click)="downloadProductPDF(product)">
+                            <i class="bi bi-download"></i>
                         </button>
 
                     </td>
@@ -156,15 +162,15 @@
             </thead>
             <tbody *ngIf="toggleView === 'cart'">
                 <tr *ngFor="let item of cartIt">
-<td><img [src]="item.product_image" alt=""
-        class="rounded-circle me-2" />
-    <span>{{ item.product_name }}</span>
-</td>                    <td>{{ item.category }}</td>
+                    <td><img [src]="item.product_image" alt="" class="rounded-circle me-2" />
+                        <span>{{ item.product_name }}</span>
+                    </td>
+                    <td>{{ item.category }}</td>
                     <td>
-                    
-                            <span class="badge bg-light text-dark" >{{ item.vendor_name
-                                }}</span>
-                        
+
+                        <span class="badge bg-light text-dark">{{ item.vendor_name
+                            }}</span>
+
                     </td>
                     <td>
                         <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, -1)">-</button>
@@ -172,23 +178,25 @@
                         <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, 1)">+</button>
                     </td>
                     <td>
-                        <button class="btn btn-light btn-sm" (click)="removeFromCart(item)"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-light btn-sm" (click)="removeFromCart(item)"><i
+                                class="bi bi-trash"></i></button>
                     </td>
                 </tr>
             </tbody>
         </table>
-        
-        
-        
+
+
+
         <!-- Pagination -->
         <div *ngIf="totalPages > 1" class="d-flex justify-content-center mt-4">
-            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage - 1)"
+                [disabled]="currentPage === 1">Previous</button>
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage + 1)"
+                [disabled]="currentPage === totalPages">Next</button>
         </div>
     </div>
 </div>
-
 
 
 <!-- modals -->
@@ -255,73 +263,9 @@
                 <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
             </div>
             <div class="modal-body">
-                <form [formGroup]="addProductForm" (ngSubmit)="onSubmit()">
-                    <div class="mb-3">
-                        <label for="productName" class="form-label">Product Name</label>
-                        <input type="text" id="productName" class="form-control" formControlName="product_name"
-                            required />
-                        <div
-                            *ngIf="addProductForm.get('product_name')?.invalid && addProductForm.get('product_name')?.touched">
-                            <small class="text-danger">Product name is required</small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-control" id="status" formControlName="status">
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select id="category" class="form-control" formControlName="category_name" required>
-                            <option value="" disabled selected>Select a category</option>
-                            <option *ngFor="let category of categories" [value]="category.category_id">{{
-                                category.category_name }}</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="vendors" class="form-label">Vendors</label>
-                        <div class="form-check" *ngFor="let vendor of vendors">
-                            <input class="form-check-input" type="checkbox" [id]="'vendor_' + vendor.vendor_id"
-                                [value]="vendor.vendor_id" (change)="onVendorChange($event, vendor.vendor_id)"
-                                [checked]="isVendorSelected(vendor.vendor_id)">
-                            <label class="form-check-label" [for]="'vendor_' + vendor.vendor_id">
-                                {{ vendor.vendor_name }}
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Quantity</label>
-                        <input type="number" id="quantity" class="form-control" formControlName="quantity_in_stock"
-                            min="1" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="unitPrice" class="form-label">Unit Price</label>
-                        <input type="number" id="unitPrice" class="form-control" formControlName="unit_price" min="0"
-                            required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="productImage" class="form-label">Product Image</label>
-                        <input type="file" id="productImage" class="form-control" (change)="onFileSelect($event)"
-                            accept="image/*" />
-                        <div *ngIf="imageError" class="text-danger">
-                            <small>Only image files are allowed</small>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" (click)="closeAddProductModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary" [disabled]="addProductForm.invalid">Add
-                            Product</button>
-                    </div>
-                </form>
+                <app-add-product *ngIf="isAddProductModalOpen" [categories]="categories" [vendors]="vendors"
+                    (closeProductModal)="closeAddProductModal()">
+                </app-add-product>
             </div>
         </div>
     </div>
@@ -329,7 +273,7 @@
 
 
 <!-- Modal for Import -->
-<div class="modal" id="importModal" tabindex="-1"  *ngIf="isImportModalOpen">
+<div class="modal" id="importModal" tabindex="-1" *ngIf="isImportModalOpen">
     <div class="modal-dialog imp-modal">
         <div class="modal-content">
             <div class="modal-header">

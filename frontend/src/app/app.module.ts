@@ -16,6 +16,7 @@ import { NgIf } from '@angular/common';
 import { HeaderInterceptor } from './core/interceptors/header-interceptor';
 import { TokenInterceptor } from './core/interceptors/token-interceptor';
 import { EncryptionService } from './core/services/encryption.service';
+import { AddProductComponent } from './shared/components/add-product/add-product.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { EncryptionService } from './core/services/encryption.service';
     InventoryComponent,
     BucketComponent,
     FileUploadComponent,
+    AddProductComponent,
   ],
   imports: [
     BrowserModule,
