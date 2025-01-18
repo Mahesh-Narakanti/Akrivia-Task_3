@@ -12,18 +12,15 @@ router.post("/", async (req, res) => {
 
     const fileContent = Buffer.from(req.files.uploadedFileName.data, "binary");
 
-    // Upload the original image to S3
     const originalImageURL = await s3Utils.uploadToS3(
       fileContent,
       "profile-pics/" + req.files.uploadedFileName.name
     );
 
-    // Create the thumbnail using sharp
     const thumbnailBuffer = await sharp(fileContent)
-      .resize(50, 50) // Resize to 100x100 for the thumbnail
+      .resize(50, 50) 
       .toBuffer();
 
-    // Upload the thumbnail to S3
     const thumbnailURL = await s3Utils.uploadToS3(
       thumbnailBuffer,
       "thumbnails/" + req.files.uploadedFileName.name
@@ -80,7 +77,7 @@ router.post("/import", async (req, res) => {
     );
 
     // Step 2: Process Vendors
-    const vendorNames = new Set(); // Use a Set to ensure no duplicates
+    const vendorNames = new Set(); 
     productsData.forEach((product) => {
       if (product.vendors && product.vendors.length > 0) {
         product.vendors.forEach((vendor) => {
@@ -117,15 +114,12 @@ router.post("/import", async (req, res) => {
     const insertedProducts = [];
     await Promise.all(
       productsData.map(async (product) => {
-        // Get the category_id for the current product
         const categoryId = insertedCategories[product.category_name];
 
-        // Get the vendor_ids for the current product
         const vendorIds = product.vendors.map(
           (vendor) => insertedVendors[vendor.vendor_name]
         );
 
-        // Insert the product into the "products" table
         const [insertedProduct] = await knex("products").insert({
           product_name: product.product_name,
           category_id: categoryId,

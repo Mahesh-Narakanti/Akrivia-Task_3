@@ -1,13 +1,15 @@
+// Load environment variables from the .env file
+require("dotenv").config();
+
 module.exports = {
-  client: "mysql2", // MySQL as the database
+  client: "mysql2", // MySQL client from environment
   connection: {
-    host: "localhost",
-    user: "root",
-    password: "Mpkl@9948",
-    database: "task3",
+    host: 'localhost',
+    user: 'root',
+    password: 'Mpkl@9948',
+    database: 'inventory',
   },
   migrations: {
-      
-    directory: "./migrations",// Folder where your migration files will be stored
+    directory: "./migrations", // Migration folder path
   },
 };

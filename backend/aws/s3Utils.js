@@ -14,19 +14,19 @@ const s3 = new AWS.S3();
 // Helper function to upload a file to S3
 async function uploadToS3(fileBuffer, key) {
   const params = {
-    Bucket: "akv-interns", // Replace with your actual S3 bucket name
-    Key: `Mahesh@AKV7082/${key}`, // Path and filename inside your bucket
+    Bucket: "akv-interns", 
+    Key: `Mahesh@AKV7082/${key}`, 
     Body: fileBuffer,
-    ContentType: "application/octet-stream", // MIME type for image
+    ContentType: "application/octet-stream",
   };
 
   try {
-    console.log("Uploading to S3 with params:", params); // Log parameters
+    console.log("Uploading to S3 with params:", params); 
     const data = await s3.upload(params).promise();
-    console.log("Upload success:", data); // Log the success response
+    console.log("Upload success:", data); 
     return data.Location;
   } catch (error) {
-    console.error("Error uploading to S3:", error); // Log the full error message
+    console.error("Error uploading to S3:", error); 
     throw new Error("Error uploading file to S3");
   }
 }

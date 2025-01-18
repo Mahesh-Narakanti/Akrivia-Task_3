@@ -21,25 +21,22 @@ export class BucketComponent implements OnInit {
   constructor(
     private fileService: FileService,
     private sanitizer: DomSanitizer,
-    private http: HttpClient
   ) {}
 
   ngOnInit() {
-    // Fetch the files when the component loads
+
     this.fileService.getFiles().subscribe((data) => {
       this.files = data;
     });
   }
 
-  // Handle file actions (Download, Upload)
   downloadAll() {
-    const zip = new JSZip(); // Create a new JSZip instance
+    const zip = new JSZip(); 
 
-    // Fetch each file and add it to the ZIP
     Promise.all(this.files.map(file => this.fetchAndAddFileToZip(file.fileURL, zip)))
       .then(() => {
-        // Generate the ZIP file and download it
-        zip.generateAsync({ type: 'blob' }).then((content :Blob) => {
+
+        zip.generateAsync({ type: 'blob' }).then((content: Blob) => {
           const blob = content;
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
@@ -60,10 +57,9 @@ export class BucketComponent implements OnInit {
           // Extract file name from URL
           const fileName = fileUrl.split('/').pop() || 'unnamed-file';
 
-          // Add the file to the ZIP archive
           zip.file(fileName, blob);
 
-          resolve(); // Resolving without a value, since the promise doesn't return anything
+          resolve(); 
         })
         .catch(error => {
           console.error('Error fetching file:', error);
@@ -71,36 +67,28 @@ export class BucketComponent implements OnInit {
         });
     });
   }
-  deleteFile(file: any) {
-    console.log('Delete file:', file);
-  }
+
   uploadFiles() {
     this.isUploadModalOpen = true;
     console.log(this.isUploadModalOpen);
   }
 
-  // Close the modal
   closeModal() {
     this.isUploadModalOpen = false;
   }
 
-  // Handle file selection (from file input)
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
     console.log('Selected file:', this.selectedFile);
   }
 
-  // Handle drag over event (for drag-and-drop)
   onDragOver(event: DragEvent) {
-    event.preventDefault(); // Prevent default behavior to allow dropping
+    event.preventDefault(); 
   }
 
-  // Handle drag leave event
   onDragLeave() {
-    // Optional: Reset border or show effects on drag leave
   }
 
-  // Handle drop event for drag-and-drop
   onDrop(event: DragEvent) {
     event.preventDefault();
     const file = event.dataTransfer?.files[0];
@@ -111,7 +99,6 @@ export class BucketComponent implements OnInit {
     }
   }
 
-  // Handle file upload
   uploadFile() {
     if (this.selectedFile) {
       console.log('Uploading file:', this.selectedFile);
@@ -121,12 +108,12 @@ export class BucketComponent implements OnInit {
     }
   }
 
-  // Upload the file to the server
+
   upload(file: File): void {
     this.fileService.uploadFile(file).subscribe({
       next: (response: any) => {
         console.log('File uploaded successfully:', response.fileURL);
-        this.files = [...this.files, response.fileURL];
+        this.files = [...this.files, this.getFileName(response.fileURL)];
         this.fileService.add(response.fileURL);
         alert('Profile picture updated successfully!');
         this.isUploadModalOpen = false; // Close the modal
@@ -139,9 +126,9 @@ export class BucketComponent implements OnInit {
   }
 
   getFileName(url: string): string {
-    const urlSegments = url.split('/'); // Split the URL by "/"
-    const fileNameWithQuery = urlSegments[urlSegments.length - 1]; // Get the last part
-    return fileNameWithQuery.split('?')[0]; // Remove any query string if present
+    const urlSegments = url.split('/'); 
+    const fileNameWithQuery = urlSegments[urlSegments.length - 1]; 
+    return fileNameWithQuery.split('?')[0];
   }
 
   getFileType(url: string): string {
@@ -155,15 +142,13 @@ export class BucketComponent implements OnInit {
     }
   }
 
-  // Method to open the file preview
   showPreview(url: string): void {
-    this.selectedFileURL = this.sanitizer.bypassSecurityTrustResourceUrl(url); // Set the selected file URL
-    this.fileType = this.getFileType(url); // Set the file type for preview
-    this.isPreviewOpen = true; // Open the preview modal
+    this.selectedFileURL = this.sanitizer.bypassSecurityTrustResourceUrl(url); 
+    this.fileType = this.getFileType(url);
+    this.isPreviewOpen = true;
   }
 
-  // Method to close the preview modal
   closePreview(): void {
-    this.isPreviewOpen = false; // Close the preview modal
+    this.isPreviewOpen = false;
   }
 }
