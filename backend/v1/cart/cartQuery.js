@@ -9,7 +9,7 @@ module.exports = {
 
   // Get cart items for a specific user
   getCartItems: (user_id) => {
-    return knex("cart").select("*").where("id", user_id);
+    return knex("cart").select("*").where("id", user_id).andWhereNot("status","99");
   },
 
   // Decrease product quantity in stock

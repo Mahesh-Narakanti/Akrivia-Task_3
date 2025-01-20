@@ -17,25 +17,39 @@ export class BucketComponent implements OnInit {
   isPreviewOpen: boolean = false; // Flag to control modal visibility
   selectedFileURL: SafeResourceUrl = ''; // Use SafeUrl type
   fileType: string = '';
+  selectedFiles: any[] = [];
 
   constructor(
     private fileService: FileService,
-    private sanitizer: DomSanitizer,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
-
     this.fileService.getFiles().subscribe((data) => {
       this.files = data;
     });
   }
 
+  toggleProductSelection(event: any, product: any): void {
+    if (event.target.checked) {
+      this.selectedFiles.push(product);
+    } else {
+      const index = this.selectedFiles.indexOf(product);
+      if (index > -1) {
+        this.selectedFiles.splice(index, 1);
+      }
+    }
+  }
+
   downloadAll() {
-    const zip = new JSZip(); 
-
-    Promise.all(this.files.map(file => this.fetchAndAddFileToZip(file.fileURL, zip)))
+    const zip = new JSZip();
+    let filesToDownload = this.files;
+    if (this.selectedFiles.length != 0)
+      filesToDownload = this.selectedFiles;
+    Promise.all(
+      filesToDownload.map((file) => this.fetchAndAddFileToZip(file.fileURL, zip))
+    )
       .then(() => {
-
         zip.generateAsync({ type: 'blob' }).then((content: Blob) => {
           const blob = content;
           const link = document.createElement('a');
@@ -44,7 +58,7 @@ export class BucketComponent implements OnInit {
           link.click();
         });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error downloading files:', error);
       });
   }
@@ -52,16 +66,16 @@ export class BucketComponent implements OnInit {
   fetchAndAddFileToZip(fileUrl: string, zip: any): Promise<void> {
     return new Promise((resolve, reject) => {
       fetch(fileUrl)
-        .then(response => response.blob())
-        .then(blob => {
+        .then((response) => response.blob())
+        .then((blob) => {
           // Extract file name from URL
           const fileName = fileUrl.split('/').pop() || 'unnamed-file';
 
           zip.file(fileName, blob);
 
-          resolve(); 
+          resolve();
         })
-        .catch(error => {
+        .catch((error) => {
           console.error('Error fetching file:', error);
           reject(error);
         });
@@ -83,11 +97,10 @@ export class BucketComponent implements OnInit {
   }
 
   onDragOver(event: DragEvent) {
-    event.preventDefault(); 
+    event.preventDefault();
   }
 
-  onDragLeave() {
-  }
+  onDragLeave() {}
 
   onDrop(event: DragEvent) {
     event.preventDefault();
@@ -108,7 +121,6 @@ export class BucketComponent implements OnInit {
     }
   }
 
-
   upload(file: File): void {
     this.fileService.uploadFile(file).subscribe({
       next: (response: any) => {
@@ -126,8 +138,8 @@ export class BucketComponent implements OnInit {
   }
 
   getFileName(url: string): string {
-    const urlSegments = url.split('/'); 
-    const fileNameWithQuery = urlSegments[urlSegments.length - 1]; 
+    const urlSegments = url.split('/');
+    const fileNameWithQuery = urlSegments[urlSegments.length - 1];
     return fileNameWithQuery.split('?')[0];
   }
 
@@ -143,7 +155,7 @@ export class BucketComponent implements OnInit {
   }
 
   showPreview(url: string): void {
-    this.selectedFileURL = this.sanitizer.bypassSecurityTrustResourceUrl(url); 
+    this.selectedFileURL = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     this.fileType = this.getFileType(url);
     this.isPreviewOpen = true;
   }

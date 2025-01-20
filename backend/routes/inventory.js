@@ -6,13 +6,32 @@ const router = express.Router();
 
 
 router.get("/products", async (req, res) => {
-  const page = parseInt(req.query.page) || 1; // Default to page 1 if no page query
-  const limit = parseInt(req.query.limit) || 10; // Default to 10 products per page
-    const token = req.headers.authorization?.split(" ")[1];
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const searchQuery = req.query.search || "";
+  const selectedColumns = req.query.filterColumns
+    ? req.query.filterColumns.split(",")
+    : null;
+
+  // Default columns if none are selected
+  const defaultFilterColumns = [
+    "product_name",
+    "category_name",
+    "vendors",
+    "status",
+    "quantity_in_stock",
+    "unit_price",
+  ];
+
+  // If selectedColumns is null, add default columns
+  const filterColumns =
+    selectedColumns && selectedColumns.length > 0
+      ? selectedColumns
+      : defaultFilterColumns;
 
   try {
-    // Fetch products with pagination
-    const products = await knex("products")
+    // Step 1: Initial Query to Get Products and Related Data (Categories and Vendors)
+    let query = knex("products")
       .join("categories", "products.category_id", "=", "categories.category_id")
       .leftJoin(
         "product_to_vendor",
@@ -27,48 +46,132 @@ router.get("/products", async (req, res) => {
         "vendors.vendor_id"
       )
       .select("products.*", "categories.category_name", "vendors.vendor_name")
-      .whereNot("products.status", "99")
-      .limit(20)
-      .offset((page - 1) *10); // Apply the pagination offset
+      .whereNot("products.status", "deleted");
 
-    // Fetch total count of products for pagination
-    const totalProducts = await knex("products")
-      .whereNot("status", "99")
-      .count("product_id as count")
-      .first();
+    // Step 2: Search based on selected filter columns
+    if (searchQuery) {
+      const search = searchQuery.toLowerCase();
+      const matchConditions = [];
 
-    const totalPages = Math.floor(totalProducts.count / 20);
+      // If no selected columns, apply search on all filter columns
+      if (filterColumns.includes("product_name")) {
+        matchConditions.push(
+          knex.raw("LOWER(products.product_name) LIKE ?", [`%${search}%`])
+        );
+      }
+      if (filterColumns.includes("category_name")) {
+        matchConditions.push(
+          knex.raw("LOWER(categories.category_name) LIKE ?", [`%${search}%`])
+        );
+      }
+      if (filterColumns.includes("vendors")) {
+        matchConditions.push(
+          knex.raw("LOWER(vendors.vendor_name) LIKE ?", [`%${search}%`])
+        );
+      }
+      if (filterColumns.includes("status")) {
+        matchConditions.push(
+          knex.raw("LOWER(products.status) LIKE ?", [`%${search}%`])
+        );
+      }
+      if (filterColumns.includes("quantity_in_stock")) {
+        matchConditions.push(
+          knex.raw("LOWER(products.quantity_in_stock) LIKE ?", [`%${search}%`])
+        );
+      }
+      if (filterColumns.includes("unit_price")) {
+        matchConditions.push(
+          knex.raw("LOWER(products.unit_price) LIKE ?", [`%${search}%`])
+        );
+      }
 
-    // Group vendors by product_id
-     const productsWithVendorsMap = {};
+      if (matchConditions.length > 0) {
+        query = query.where(function () {
+          matchConditions.forEach((cond) => {
+            this.orWhereRaw(cond);
+          });
+        });
+      }
+    }
 
-     // Populate the map with products and associated vendors
-     products.forEach((product) => {
-       const { vendor_name, ...productData } = product;
+    // Step 3: Get matching product IDs based on the search query
+    const productIds = await query.select("products.product_id");
 
-       // Check if the product is already in the map
-       if (productsWithVendorsMap[productData.product_id]) {
-         // Add vendor to the existing product's vendor list
-         productsWithVendorsMap[productData.product_id].vendors.push({
-           vendor_name,
-         });
-       } else {
-         // Otherwise, create a new product entry with a vendors array
-         productsWithVendorsMap[productData.product_id] = {
-           ...productData,
-           vendors: vendor_name ? [{ vendor_name }] : [],
-         };
-       }
-     });
+    // If no products match the search, return empty result
+    if (productIds.length === 0) {
+      return res.json({
+        products: [],
+        totalPages: 0,
+        currentPage: page,
+      });
+    }
 
-     // Convert the map to an array of products
-     const productsWithVendors = Object.values(productsWithVendorsMap).slice(
-       0,
-       10
-     );
+    // Step 4: Fetch the detailed product information for matching product IDs
+    let detailedQuery = knex("products")
+      .join("categories", "products.category_id", "=", "categories.category_id")
+      .leftJoin(
+        "product_to_vendor",
+        "products.product_id",
+        "=",
+        "product_to_vendor.product_id"
+      )
+      .leftJoin(
+        "vendors",
+        "product_to_vendor.vendor_id",
+        "=",
+        "vendors.vendor_id"
+      )
+      .select("products.*", "categories.category_name", "vendors.vendor_name")
+      .whereIn(
+        "products.product_id",
+        productIds.map((product) => product.product_id)
+      );
 
+    // Step 5: Apply pagination
+    // const totalProducts = productIds.length;
+    // const totalPages = Math.ceil(totalProducts / limit);
+    // detailedQuery = detailedQuery.limit(limit).offset((page - 1) * limit);
+
+    // Step 6: Fetch the final list of products with vendors and category details
+    const products = await detailedQuery;
+
+    // Step 7: Fetch vendors for each product
+    const productIdsForVendors = products.map((product) => product.product_id);
+    const vendors = await knex("product_to_vendor")
+      .join("vendors", "product_to_vendor.vendor_id", "=", "vendors.vendor_id")
+      .whereIn("product_to_vendor.product_id", productIdsForVendors)
+      .select("product_to_vendor.product_id", "vendors.vendor_name");
+
+    // Step 8: Map the vendors to their corresponding products
+    const productsWithVendorsMap = {};
+
+    products.forEach((product) => {
+      const { vendor_name, ...productData } = product;
+
+      if (productsWithVendorsMap[productData.product_id]) {
+        productsWithVendorsMap[productData.product_id].vendors.push({
+          vendor_name,
+        });
+      } else {
+        productsWithVendorsMap[productData.product_id] = {
+          ...productData,
+          vendors: vendor_name ? [{ vendor_name }] : [],
+        };
+      }
+    });
+
+    const totalProducts = Object.keys(productsWithVendorsMap).length; // Correct length calculation
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    // Step 3: Apply pagination (manual limit and offset)
+    const productsWithVendors = Object.values(productsWithVendorsMap).slice(
+      (page - 1) * limit,
+      page * limit
+    ); // Manually paginate the array
+
+    // Step 9: Return the paginated and detailed product list
     res.json({
-      products:productsWithVendors,
+      products: productsWithVendors,
       totalPages,
       currentPage: page,
     });
@@ -77,6 +180,7 @@ router.get("/products", async (req, res) => {
     res.status(500).send("Error fetching products");
   }
 });
+
 
 
 router.get("/vendor", async (req, res) => {

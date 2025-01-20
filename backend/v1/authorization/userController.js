@@ -1,4 +1,5 @@
 const userService = require("./userService"); // Relative import
+const logger = require("../../logger");
 
 module.exports = {
   // Signup route controller
@@ -8,7 +9,7 @@ module.exports = {
       await userService.createUser(firstName, lastName, email, password);
       res.status(200).json({ message: "User registered successfully" });
     } catch (err) {
-      console.log("error" + err);
+      logger.error(err);
       res.status(500).send("Server error");
     }
   },
@@ -23,6 +24,7 @@ module.exports = {
         token: response.token,
       });
     } catch (err) {
+      logger.error(err);
       res.status(err.status || 500).send(err.message);
     }
   },
@@ -38,6 +40,7 @@ module.exports = {
       const user = await userService.getUserFromToken(token);
       res.status(200).json(user);
     } catch (err) {
+      logger.error(err);
       res.status(500).send("Internal Server Error");
     }
   },
@@ -57,6 +60,7 @@ module.exports = {
         .status(200)
         .json({ message: "Profile picture updated successfully!" });
     } catch (err) {
+      logger.error(err);
       res.status(500).json({ message: "Error updating profile picture" });
     }
   },

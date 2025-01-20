@@ -20,14 +20,14 @@ module.exports = {
       )
       .select("products.*", "categories.category_name", "vendors.vendor_name")
       .whereNot("products.status", "99")
-      .limit(20) 
+      .limit(limit) 
       .offset((page - 1) * limit); 
   },
 
   // Get total product count for pagination
   getTotalProductsCount: async () => {
     return await knex("products")
-      .whereNot("status", "99")
+      .whereNot("status", "deleted")
       .count("product_id as count")
       .first();
   },

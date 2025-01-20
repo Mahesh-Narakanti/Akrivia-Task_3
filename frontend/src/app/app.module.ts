@@ -33,7 +33,6 @@ import { AddProductComponent } from './shared/components/add-product/add-product
     AppRoutingModule,
     ReactiveFormsModule,
     HttpClientModule,
-    NgIf,
     FormsModule,
     ReactiveFormsModule,
   ],

@@ -3,7 +3,7 @@ const productController = require("./productController");
 const router = express.Router();
 
 // Routes for fetching products, categories, and vendors
-router.get("/products", productController.getProducts);
+//router.get("/products", productController.getProducts);
 router.get("/vendor", productController.getVendors);
 router.get("/category", productController.getCategories);
 

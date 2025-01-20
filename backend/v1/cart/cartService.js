@@ -28,7 +28,6 @@ module.exports = {
         quantity: item.quantity,
         category: item.category_name,
         product_image: item.product_image,
-        created_at: new Date(),
       }));
 
       await trx("cart").insert(itemsToInsert);
@@ -58,6 +57,15 @@ module.exports = {
 
   // Get cart items from database
   getCartItems: async (user_id) => {
-    return knex("cart").select("*").where("id", user_id);
+    return knex("cart")
+      .select("*")
+      .where("id", user_id)
+      .andWhereNot("status", "99");
+  },
+
+  deleteItem: async (cart_id) => {
+    await knex("cart")
+      .where("cart_id", cart_id)
+      .update({ status: '99' });
   },
 };

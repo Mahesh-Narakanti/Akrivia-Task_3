@@ -1,4 +1,5 @@
 const fileService = require("./fileService");
+const logger = require("../../logger");
 
 module.exports = {
   // Upload file route controller
@@ -15,7 +16,7 @@ module.exports = {
 
       res.json({ fileURL });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).send("Error uploading file");
     }
   },
@@ -36,7 +37,7 @@ module.exports = {
         fileId,
       });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).send("Error adding file");
     }
   },
@@ -47,7 +48,7 @@ module.exports = {
       const files = await fileService.getFilesFromDatabase();
       res.json(files);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).send("Error retrieving files");
     }
   },

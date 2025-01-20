@@ -7,8 +7,11 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
+import { Router } from '@angular/router';
+
 @Injectable()
 export class HeaderInterceptor implements HttpInterceptor {
+  constructor(private router:Router){}
   intercept(
     request: HttpRequest<any>,
     next: HttpHandler
@@ -36,7 +39,7 @@ export class HeaderInterceptor implements HttpInterceptor {
         } else {
           console.error('An unexpected error occurred:', err);
         }
-
+        
         // Propagate the error to the subscriber
         return throwError(() => err);
       })

@@ -1,4 +1,5 @@
 const cartService = require("./cartService"); // Relative import
+const logger=require("../../logger")
 
 module.exports = {
   // Add to cart route controller
@@ -25,7 +26,7 @@ module.exports = {
       await cartService.addItemsToCart(user_id, itemsToSend);
       res.status(200).json({ message: "Items added to cart successfully" });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).json({
         message: "Error processing your request",
         error: error.message,
@@ -46,8 +47,20 @@ module.exports = {
       const cartItems = await cartService.getCartItems(user_id);
       res.json(cartItems);
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).send("Error fetching products");
     }
   },
+
+   deleteItem: async (req, res) => {
+      const cart_id = req.params.cart_id;
+      try {
+        await cartService.deleteItem(cart_id);
+        res.status(200).json({ message: "Product status updated to 99" });
+      } catch (err) {
+        logger.error("Error deleting product:", err);
+        res.status(500).send("Error updating product status");
+      }
+    },
+  
 };

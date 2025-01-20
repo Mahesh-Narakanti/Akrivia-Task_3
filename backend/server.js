@@ -6,15 +6,15 @@ const knexConfig = require("./mysql/knexfile");
 const knex = require("knex")(knexConfig);
 // const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
-// const inventory = require("./routes/inventory");
+const inventory = require("./routes/inventory");
 // const fileRoute = require("./routes/files");
 // const cartRoute = require("./routes/cart");
-// const productRoute = require("./routes/product");
+ //const productRoute = require("./routes/product");
 const validateToken = require("./middilewares/tokenValidation-middileware");
 const userRoute = require("./v1/authorization/userRoute");
 const cartRoute = require("./v1/cart/cartRoutes");
 const fileRoute = require("./v1/file/fileRoutes");
-const inventory=require("./v1/inventory/productRoutes")
+const inventories=require("./v1/inventory/productRoutes")
 // Initialize Objection.js with Knex
 Model.knex(knex);
 
@@ -26,9 +26,10 @@ app.use(express.json());
 // Define Routes
 app.use("/auth", userRoute);
 app.use("/upload",validateToken, uploadRoutes);
-app.use("/inventory",validateToken, inventory);
+app.use("/inventory", validateToken, inventory);
+app.use("/inventories", validateToken, inventories);
 app.use("/files",validateToken, fileRoute);
-app.use("/product",validateToken, inventory);
+app.use("/product",validateToken, inventories);
 app.use("/cart",validateToken, cartRoute);
 
 app.get("/api/protected-data", validateToken, (req, res) => {

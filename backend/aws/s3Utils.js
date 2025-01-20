@@ -1,6 +1,6 @@
 const AWS = require("aws-sdk");
 require("dotenv").config();
-
+const logger = require("../logger");
 
 // AWS S3 Configuration
 AWS.config.update({
@@ -21,12 +21,12 @@ async function uploadToS3(fileBuffer, key) {
   };
 
   try {
-    console.log("Uploading to S3 with params:", params); 
+    logger.info("Uploading to S3 with params:", params); 
     const data = await s3.upload(params).promise();
-    console.log("Upload success:", data); 
+    logger.info("Upload success:", data); 
     return data.Location;
   } catch (error) {
-    console.error("Error uploading to S3:", error); 
+    logger.error("Error uploading to S3:", error); 
     throw new Error("Error uploading file to S3");
   }
 }

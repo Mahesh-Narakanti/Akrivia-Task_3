@@ -42,7 +42,7 @@ export class AuthService {
   uploadFile(file: File): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('uploadedFileName', file, file.name);
-    return of(false);
+   
     return this.http.post('http://localhost:3000/upload', formData);
   }
 

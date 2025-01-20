@@ -1,4 +1,5 @@
 const productService = require("./productService");
+const logger = require("../../logger");
 
 module.exports = {
   // Fetch products with pagination
@@ -11,7 +12,7 @@ module.exports = {
         await productService.fetchPaginatedProducts(page, limit);
       res.json({ products, totalPages, currentPage });
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send("Error fetching products");
     }
   },
@@ -22,7 +23,7 @@ module.exports = {
       const vendors = await productService.fetchVendors();
       res.json(vendors);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send("Error fetching vendors");
     }
   },
@@ -33,7 +34,7 @@ module.exports = {
       const categories = await productService.fetchCategories();
       res.json(categories);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send("Error fetching categories");
     }
   },
@@ -66,7 +67,7 @@ module.exports = {
         productId: newProduct.product_id,
       });
     } catch (err) {
-      console.error("Error adding product:", err);
+      logger.error("Error adding product:", err);
       res.status(500).send("Error adding product");
     }
   },
@@ -78,7 +79,7 @@ module.exports = {
       await productService.deleteProduct(productId);
       res.status(200).json({ message: "Product status updated to 99" });
     } catch (err) {
-      console.error("Error deleting product:", err);
+      logger.error("Error deleting product:", err);
       res.status(500).send("Error updating product status");
     }
   },
@@ -109,7 +110,7 @@ module.exports = {
         productId: updatedProduct.product_id,
       });
     } catch (err) {
-      console.error("Error updating product:", err);
+      logger.error("Error updating product:", err);
       res.status(500).send("Error updating product");
     }
   },

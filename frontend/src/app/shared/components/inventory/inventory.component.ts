@@ -4,7 +4,7 @@ import { map, switchMap } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import * as XLSX from 'xlsx'; // Import the xlsx library
-import { jsPDF } from 'jspdf'; // Import jsPDF
+import { jsPDF } from 'jspdf';
 
 @Component({
   selector: 'app-inventory',
@@ -99,10 +99,17 @@ export class InventoryComponent implements OnInit {
   }
 
   removeFromCart(item: any): void {
-    const index = this.cartItems.indexOf(item);
-    if (index > -1) {
-      this.cartItems.splice(index, 1);
-    }
+    this.productService.removeItemCart(item.cart_id).subscribe({
+      next: (response) => {
+        alert('item deleted successfully');
+         this.cartIt = this.cartIt.filter(
+           (c: any) => c.cart_id !== item.cart_id
+         );
+      },
+      error: (err) => {
+        console.error('Error deleting item from cart:', err);
+      },
+    });
   }
 
   moveToCart(): void {
@@ -111,8 +118,8 @@ export class InventoryComponent implements OnInit {
       product_name: item.product_name,
       product_image: item.product_image,
       quantity: item.quantity,
-      selected_vendor_name:
-        item.vendors.length > 0 ? item.vendors[0].vendor_name : null,
+      selected_vendor_name: item.selected_vendor_name,
+        
       category_name: item.category_name,
       created_at: new Date().toISOString(),
     }));
@@ -143,7 +150,10 @@ export class InventoryComponent implements OnInit {
     });
   }
   downloadAll() {
-    const formattedData = this.products.map((product) => ({
+    let productsToDownload = this.products;
+    if (this.selectedProducts.length != 0)
+      productsToDownload = this.selectedProducts;
+    const formattedData = productsToDownload.map((product) => ({
       'Product ID': product.product_id,
       'Product Name': product.product_name,
       Category: product.category_name,
@@ -273,6 +283,7 @@ export class InventoryComponent implements OnInit {
     this.productService.updateProduct(updatedProduct).subscribe({
       next: (response) => {
         console.log(response);
+        this.loadProducts();
       },
     });
     console.log('Product saved:', product);
@@ -389,7 +400,7 @@ export class InventoryComponent implements OnInit {
   onSearchChange(event: any): void {
     this.searchQuery = event.target.value;
     console.log('Search Query: ', this.searchQuery);
-    this.filteredProducts();
+    this.loadProducts();
   }
 
   toggleFilterSelection(event: any, columnValue: string): void {
@@ -403,52 +414,53 @@ export class InventoryComponent implements OnInit {
     }
 
     console.log('Selected Filter Columns: ', this.selectedFilterColumns);
+    this.loadProducts();
   }
-  filteredProducts() {
-    if (!this.searchQuery) {
-      return this.products;
-    }
+  // filteredProducts() {
+  //   if (!this.searchQuery) {
+  //     return this.products;
+  //   }
 
-    return this.products.filter((product) => {
-      if (this.selectedFilterColumns.length === 0) {
-        return this.filterColumns.some((filterColumn) => {
-          const column = filterColumn.value;
-          const valueToCheck = product[column];
-          if (column === 'vendors') {
-            return product.vendors.some(
-              (vendor: any) =>
-                vendor?.vendor_name
-                  ?.toLowerCase()
-                  .includes(this.searchQuery.toLowerCase()) ?? false
-            );
-          } else {
-            return valueToCheck
-              .toString()
-              .toLowerCase()
-              .includes(this.searchQuery.toLowerCase());
-          }
-        });
-      }
+  //   return this.products.filter((product) => {
+  //     if (this.selectedFilterColumns.length === 0) {
+  //       return this.filterColumns.some((filterColumn) => {
+  //         const column = filterColumn.value;
+  //         const valueToCheck = product[column];
+  //         if (column === 'vendors') {
+  //           return product.vendors.some(
+  //             (vendor: any) =>
+  //               vendor?.vendor_name
+  //                 ?.toLowerCase()
+  //                 .includes(this.searchQuery.toLowerCase()) ?? false
+  //           );
+  //         } else {
+  //           return valueToCheck
+  //             .toString()
+  //             .toLowerCase()
+  //             .includes(this.searchQuery.toLowerCase());
+  //         }
+  //       });
+  //     }
 
-      return this.selectedFilterColumns.some((column) => {
-        const valueToCheck = product[column];
+  //     return this.selectedFilterColumns.some((column) => {
+  //       const valueToCheck = product[column];
 
-        if (column === 'vendors') {
-          return product.vendors.some(
-            (vendor: any) =>
-              vendor?.vendor_name
-                ?.toLowerCase()
-                ?.includes(this.searchQuery.toLowerCase()) ?? false
-          );
-        } else {
-          return valueToCheck
-            .toString()
-            .toLowerCase()
-            .includes(this.searchQuery.toLowerCase());
-        }
-      });
-    });
-  }
+  //       if (column === 'vendors') {
+  //         return product.vendors.some(
+  //           (vendor: any) =>
+  //             vendor?.vendor_name
+  //               ?.toLowerCase()
+  //               ?.includes(this.searchQuery.toLowerCase()) ?? false
+  //         );
+  //       } else {
+  //         return valueToCheck
+  //           .toString()
+  //           .toLowerCase()
+  //           .includes(this.searchQuery.toLowerCase());
+  //       }
+  //     });
+  //   });
+  // }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -456,17 +468,32 @@ export class InventoryComponent implements OnInit {
       this.loadProducts();
     }
   }
-  
+
+  pageNumbers(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
   loadProducts(): void {
-    this.productService.getProducts(this.currentPage, this.pageSize).subscribe({
-      next: (data) => {
-        this.products = data.products;
-        this.totalPages = data.totalPages;
-        this.currentPage = data.currentPage;
-      },
-      error: (err) => {
-        console.error('Error fetching products', err);
-      },
-    });
+    this.productService
+      .getProducts(
+        this.currentPage,
+        this.pageSize,
+        this.searchQuery,
+        this.selectedFilterColumns
+      )
+      .subscribe({
+        next: (data) => {
+          this.products = data.products;
+          this.totalPages = data.totalPages;
+          this.currentPage = data.currentPage;
+        },
+        error: (err) => {
+          console.error('Error fetching products', err);
+        },
+      });
   }
 }

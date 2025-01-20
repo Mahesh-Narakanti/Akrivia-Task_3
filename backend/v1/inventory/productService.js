@@ -28,7 +28,7 @@ module.exports = {
   fetchPaginatedProducts: async (page, limit) => {
     const products = await productQuery.getPaginatedProducts(page, limit);
     const totalProducts = await productQuery.getTotalProductsCount();
-    const totalPages = Math.ceil(totalProducts.count / 20);
+    const totalPages = Math.ceil(totalProducts.count / limit);
 
     const productsWithVendors = module.exports.groupVendorsByProduct(products);
 
@@ -46,9 +46,9 @@ module.exports = {
     product_image,
     full_image,
   }) => {
-    let curstatus = "1";
+    let curstatus = "active";
     if (status === 0) {
-      curstatus = "0";
+      curstatus = "default";
     }
 
     const [newProduct] = await knex("products").insert({
@@ -82,7 +82,7 @@ module.exports = {
   deleteProduct: async (productId) => {
     await knex("products")
       .where("product_id", productId)
-      .update({ status: "99", updated_at: knex.fn.now() });
+      .update({ status: "deleted" });
   },
 
   // Update a product
@@ -95,9 +95,9 @@ module.exports = {
     quantity_in_stock,
     unit_price,
   }) => {
-    let curstatus = "1";
+    let curstatus = "active";
     if (status === 0) {
-      curstatus = "0";
+      curstatus = "default";
     }
 
     await knex("products").where("product_id", product_id).update({

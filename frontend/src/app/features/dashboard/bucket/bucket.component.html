@@ -18,7 +18,7 @@
             <tbody>
                 <!-- Use *ngFor to loop through the files and display them -->
                 <tr *ngFor="let file of files">
-                    <td><input type="checkbox" /></td>
+                    <td><input type="checkbox" (change)="toggleProductSelection($event, file)"/></td>
                     <td (click)="showPreview(file.fileURL)" style="cursor: pointer; color: blue;">
                         {{ getFileName(file.fileURL) }}</td>
                 </tr>
