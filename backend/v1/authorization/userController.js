@@ -1,9 +1,25 @@
 const userService = require("./userService"); // Relative import
 const logger = require("../../logger");
+const Joi = require("joi");
 
 module.exports = {
   // Signup route controller
   signup: async (req, res) => {
+
+    const schema = Joi.object({
+      firstName: Joi.string().min(1).max(30).required(),
+      lastName: Joi.string().min(1).max(30).required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().min(6).required(),
+    });
+
+    // Validate the request body using the schema
+    const { error } = schema.validate(req.body);
+
+    if (error) {
+      // If validation fails, send a 400 status with the error details
+      return res.status(400).json({ message: error.details[0].message });
+    }
     const { firstName, lastName, email, password } = req.body;
     try {
       await userService.createUser(firstName, lastName, email, password);
@@ -16,12 +32,14 @@ module.exports = {
 
   // Login route controller
   login: async (req, res) => {
+    console.log(req.body);
     const { user, password } = req.body;
     try {
       const response = await userService.loginUser(user, password);
       res.status(200).send({
         message: "Login successful",
         token: response.token,
+        refreshToken: response.refreshToken,
       });
     } catch (err) {
       logger.error(err);
@@ -62,6 +80,23 @@ module.exports = {
     } catch (err) {
       logger.error(err);
       res.status(500).json({ message: "Error updating profile picture" });
+    }
+  },
+
+  refreshToken: async (req, res, next) => {
+    const refresh = req.body.refreshToken;
+    if (!refresh) {
+      return res.status(403).json({ message: "Refresh token is required" });
+    }
+    try {
+      const response = await userService.updateToken(refresh);
+      console.log("Refresh function response: ", response);
+      res.status(200).send({
+        message: "Token generated successfully",
+        token: response.newToken,
+      });
+    } catch (err) {
+      next(err);
     }
   },
 };

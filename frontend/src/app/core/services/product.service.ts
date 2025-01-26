@@ -27,7 +27,8 @@ export class ProductService {
       params = params.set('filterColumns', filterColumns.join(','));
     }
     return this.http.get<ProductListResponse>(
-      `${this.apiUrl}/inventory/products`,{params}
+      `${this.apiUrl}/inventory/products`,
+      { params }
     );
   }
 
@@ -49,11 +50,24 @@ export class ProductService {
     return this.http.get(`${this.apiUrl}/cart/get`);
   }
 
-  removeItemCart(cart_id:any): Observable<any>{
+  removeItemCart(cart_id: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/cart/del/${cart_id}`, {
       status: 99,
     });
-    
+  }
+
+  adjustQuantity(
+    userId: number,
+    cartId: number,
+    productName: string,
+    amount: number
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cart/adjust-quantity`, {
+      user_id: userId,
+      cart_id: cartId,
+      product_name: productName,
+      amount,
+    });
   }
 
   addProduct(newProduct: any): Observable<any> {

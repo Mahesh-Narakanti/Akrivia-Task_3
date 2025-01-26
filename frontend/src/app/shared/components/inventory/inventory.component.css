@@ -28,7 +28,7 @@
     top: 10%;
     /* Adjust modal's vertical positioning */
 }
-.p-modal, .imp-modal{
+.p-modal, .imp-modal , .i-modal{
     width: 40%;
 }
 
@@ -75,4 +75,23 @@ button {
 
 .d-flex.justify-content-between {
     justify-content: space-between;
+}
+
+.remaining-vendors-tooltip {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    max-width: 200px;
+    z-index: 1000;
+}
+
+.remaining-vendors:hover+.remaining-vendors-tooltip {
+    display: block;
+}
+
+.remaining-vendors {
+    cursor: pointer;
 }

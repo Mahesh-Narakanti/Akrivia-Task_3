@@ -9,7 +9,10 @@
                 data-bs-toggle="dropdown" aria-expanded="false">
                 <img [src]="userData.profile_pic || 'https://via.placeholder.com/40'" alt="Profile"
                     class="rounded-circle me-2" />
-                <span>{{ userData.username }}</span>
+                <div class="d-flex flex-column">
+                    <span>{{ userData.username }}</span>
+                    <small class="text-muted">{{ userData.email }}</small>
+                </div>
             </button>
             <ul class="dropdown-menu" aria-labelledby="userDropdown">
                 <li><button class="dropdown-item" (click)="updateProfile()">Update Profile</button></li>
@@ -30,9 +33,11 @@
                 <div class="modal-body">
                     <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
                         (drop)="onDrop($event)">
+                        <i class="bi bi-cloud-upload-fill cloud-icon mb-3" style="font-size: 48px; color: #007bff;"></i>
+                        <!-- Cloud Upload Icon -->
+                        <p class="text-muted mb-3">Drag and drop a file here or</p>
                         <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
                             accept="image/*">
-                        <p class="text-muted">Or drag and drop a file here</p>
                         <button class="btn btn-success" (click)="uploadFile()">Upload</button>
                     </div>
                 </div>

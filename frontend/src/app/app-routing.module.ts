@@ -1,37 +1,45 @@
 import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './features/entry/login/login.component';
-import { RegisterComponent } from './features/entry/register/register.component';
-import { DashboardComponent } from './features/dashboard/dashboard/dashboard.component';
 import { AuthGuard } from './auth.guard';
-
 
 const routes: Routes = [
   {
-    path: '',
-    component: LoginComponent,
-    canActivate:[AuthGuard]
+    path: 'auth',
+    loadChildren: () =>
+      import('./features/entry/auth/auth.module').then((m) => m.AuthModule),
   },
   {
-    path: 'signup',
-    component: RegisterComponent,
-    canActivate:[AuthGuard]
+    path: 'feature',
+    loadChildren: () =>
+      import('./features/dashboard/feature/feature.module').then(
+        (m) => m.FeatureModule
+      ),
+  },
+  {
+    path: '',
+    redirectTo: 'auth/login',
+    pathMatch: 'full',
   },
   {
     path: 'login',
-    component: LoginComponent,
-    canActivate:[AuthGuard]
+    redirectTo: 'auth/login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'register',
+    redirectTo: 'auth/register',
+    pathMatch: 'full',
   },
   {
     path: 'dashboard',
-    component: DashboardComponent,
-    canActivate:[AuthGuard]
+    redirectTo: 'feature/dashboard',
+    pathMatch: 'full',
   },
   {
     path: '**',
-    redirectTo:'',
-    pathMatch:'full'
-  }
+    redirectTo: 'auth/login',
+    pathMatch: 'full',
+  },
 ];
 
 @NgModule({

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { map, switchMap } from 'rxjs';
+import { debounceTime, map, of, Subject, switchMap } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import * as XLSX from 'xlsx'; // Import the xlsx library
@@ -31,12 +31,22 @@ export class InventoryComponent implements OnInit {
   limit: number = 10;
   pageSize: number = 10;
   totalUsers: number = 0;
+  class1 = 'btn btn-light  active border border-secondary btn-sm';
+  class2 = 'btn btn-light   border border-secondary btn-sm';
+  private searchSubject: Subject<void> = new Subject<void>();
 
   constructor(
     private productService: ProductService,
     private fb: FormBuilder,
     private auth: AuthService
-  ) {}
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(777),
+      switchMap(() => {
+        return of(this.loadProducts());
+      })
+    ).subscribe();
+  }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -71,6 +81,11 @@ export class InventoryComponent implements OnInit {
     }
   }
 
+  getRemainingVendorsTooltip(vendors: any[]): string {
+    const remainingVendors = vendors.slice(2); // Get all vendors beyond the first two
+    return remainingVendors.map((vendor) => vendor.vendor_name).join(', ');
+  }
+
   openCartModal(): void {
     this.cartItems = this.selectedProducts.map((item) => ({
       product_id: item.product_id,
@@ -87,6 +102,16 @@ export class InventoryComponent implements OnInit {
     this.isCartModalOpen = true;
   }
 
+  removeProductCart(item: any): void {
+    const index = this.cartItems.indexOf(item);
+
+    // If the item exists in the cart, remove it
+    if (index > -1) {
+      this.cartItems.splice(index, 1); // Remove 1 item at the found index
+      this.selectedProducts.splice(index, 1);
+    }
+  }
+
   closeCartModal(): void {
     this.isCartModalOpen = false;
   }
@@ -97,14 +122,30 @@ export class InventoryComponent implements OnInit {
       item.quantity = 0;
     }
   }
+  adjustQuantityinCart(item: any, amount: number): void {
+    if (item.quantity + amount < 1) {
+      amount = 0;
+    }
+    this.productService
+      .adjustQuantity(item.user_id, item.cart_id, item.product_name, amount)
+      .subscribe({
+        next: (response) => {
+          item.quantity += amount;
+          this.loadProducts();
+        },
+        error: (error) => {
+          console.error('Error updating quantity: ' + error.message);
+        },
+      });
+  }
 
   removeFromCart(item: any): void {
     this.productService.removeItemCart(item.cart_id).subscribe({
       next: (response) => {
         alert('item deleted successfully');
-         this.cartIt = this.cartIt.filter(
-           (c: any) => c.cart_id !== item.cart_id
-         );
+        this.cartIt = this.cartIt.filter(
+          (c: any) => c.cart_id !== item.cart_id
+        );
       },
       error: (err) => {
         console.error('Error deleting item from cart:', err);
@@ -119,7 +160,7 @@ export class InventoryComponent implements OnInit {
       product_image: item.product_image,
       quantity: item.quantity,
       selected_vendor_name: item.selected_vendor_name,
-        
+
       category_name: item.category_name,
       created_at: new Date().toISOString(),
     }));
@@ -129,6 +170,8 @@ export class InventoryComponent implements OnInit {
     this.productService.addItemsToCart(itemsToSend).subscribe({
       next: (response) => {
         console.log('Cart items added successfully:', response);
+        this.loadProducts();
+        this.selectedProducts = [];
         alert('products added to the cart successfully');
         this.closeCartModal();
       },
@@ -140,19 +183,37 @@ export class InventoryComponent implements OnInit {
 
   toggleViewSelection(view: string) {
     this.toggleView = view;
-    this.productService.getItemsToCart().subscribe({
-      next: (response) => {
-        this.cartIt = response;
-      },
-      error: (err) => {
-        console.log(err);
-      },
-    });
+    this.selectedFilterColumns = [];
+    this.selectedProducts = [];
+    this.cartItems = [];
+    if (view === 'cart') {
+      this.productService.getItemsToCart().subscribe({
+        next: (response) => {
+          this.cartIt = response;
+        },
+        error: (err) => {
+          console.log(err);
+        },
+      });
+    } else this.cartItems = [];
   }
   downloadAll() {
-    let productsToDownload = this.products;
-    if (this.selectedProducts.length != 0)
-      productsToDownload = this.selectedProducts;
+    let productsToDownload = this.selectedProducts;
+    if (this.selectedProducts.length === 0) {
+      this.productService
+        .getProducts(1, 100, this.searchQuery, this.selectedFilterColumns)
+        .subscribe({
+          next: (data) => {
+            this.beginDownload(data.products);
+          },
+          error: (err) => {
+            console.error('Error fetching products', err);
+          },
+        });
+    } else this.beginDownload(productsToDownload);
+  }
+
+  beginDownload(productsToDownload: any[]) {
     const formattedData = productsToDownload.map((product) => ({
       'Product ID': product.product_id,
       'Product Name': product.product_name,
@@ -188,9 +249,23 @@ export class InventoryComponent implements OnInit {
     this.isImportModalOpen = true;
   }
 
-  onFileChange(event: any): void {
-    const file = event.target.files[0];
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
 
+  onDragLeave() {}
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (file) {
+      this.parseData(file);
+      (document.getElementById('fileInput') as HTMLInputElement).files =
+        event.dataTransfer.files;
+    }
+  }
+
+  parseData(file: File) {
     if (file && file.name.endsWith('.xlsx')) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
@@ -233,6 +308,10 @@ export class InventoryComponent implements OnInit {
       this.errorMessage = 'Please upload a valid .xlsx file.';
     }
   }
+  onFileChange(event: any): void {
+    const file = event.target.files[0];
+    this.parseData(file);
+  }
 
   uploadData(): void {
     if (this.parsedProducts.length > 0) {
@@ -240,8 +319,7 @@ export class InventoryComponent implements OnInit {
         next: (response) => {
           this.isImportModalOpen = false;
           this.errorMessage = null;
-
-          this.products = [...this.products, ...this.parsedProducts];
+          alert('products imported sucessfully');
         },
         error: (err) => {
           this.errorMessage = 'Failed to upload products. Please try again.';
@@ -393,14 +471,19 @@ export class InventoryComponent implements OnInit {
     { label: 'Quantity', value: 'quantity_in_stock' },
     { label: 'Unit Price', value: 'unit_price' },
   ];
-
+  cartFilterColumns = [
+    { label: 'Product Name', value: 'product_name' },
+    { label: 'Category', value: 'category' },
+    { label: 'Vendor', value: 'vendor_name' },
+    { label: 'Quantity', value: 'quantity' },
+  ];
   searchQuery = '';
   selectedFilterColumns: string[] = [];
 
   onSearchChange(event: any): void {
     this.searchQuery = event.target.value;
     console.log('Search Query: ', this.searchQuery);
-    this.loadProducts();
+    this.searchSubject.next();
   }
 
   toggleFilterSelection(event: any, columnValue: string): void {
@@ -462,6 +545,30 @@ export class InventoryComponent implements OnInit {
   //   });
   // }
 
+  filterCart() {
+    if (!this.searchQuery) return this.cartIt;
+    return this.cartIt.filter((cart) => {
+      if (this.selectedFilterColumns.length === 0)
+        return this.filtering(this.cartFilterColumns, cart, true);
+      return this.filtering(this.selectedFilterColumns, cart, false);
+    });
+  }
+
+  filtering(onColumns: any[], cart: any, flag: boolean) {
+    return onColumns.some((column) => {
+      if (flag) column = column.value;
+      const valueToCheck = cart[column];
+      console.log(valueToCheck);
+      if (valueToCheck === undefined || valueToCheck === null) {
+        return false; // Skip if value is undefined or null
+      }
+      return valueToCheck
+        .toString()
+        .toLowerCase()
+        .includes(this.searchQuery.toLowerCase());
+    });
+  }
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -469,9 +576,12 @@ export class InventoryComponent implements OnInit {
     }
   }
 
-  pageNumbers(): number[] {
+  getPageNumbers(): number[] {
     const pages = [];
-    for (let i = 1; i <= this.totalPages; i++) {
+    const start = Math.max(this.currentPage - 2, 1); // Display previous 2 pages
+    const end = Math.min(this.currentPage + 2, this.totalPages); // Display next 2 pages
+
+    for (let i = start; i <= end; i++) {
       pages.push(i);
     }
     return pages;

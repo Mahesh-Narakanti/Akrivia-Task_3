@@ -1,6 +1,6 @@
-<div class="card">
+<div class="card shadow-sm">
     <div class="card-header bg-white mt-2">
-        <h5 class="mb-2">Files uploaded</h5>
+        <h5 class="mb-2">Files Uploaded</h5>
         <div class="d-flex gap-2 mt-3 mb-3">
             <button class="btn btn-light border btn-sm me-2" (click)="downloadAll()">Download all</button>
             <button class="btn btn-violet btn-sm" (click)=" uploadFiles()">
@@ -8,46 +8,92 @@
                 Upload
             </button>
         </div>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" /></th>
-                    <th>File Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Use *ngFor to loop through the files and display them -->
-                <tr *ngFor="let file of files">
-                    <td><input type="checkbox" (change)="toggleProductSelection($event, file)"/></td>
-                    <td (click)="showPreview(file.fileURL)" style="cursor: pointer; color: blue;">
-                        {{ getFileName(file.fileURL) }}</td>
-                </tr>
-            </tbody>
-        </table>
+    </div>
+
+    <!-- Table for displaying files -->
+    <div class="card-body">
+        <div class="table-responsive">
+            <cdk-virtual-scroll-viewport itemSize="10" class="viewport">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" /></th>
+                            <th>File Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Virtual scroll for file rows -->
+                        <tr *cdkVirtualFor="let file of files">
+                            <td><input type="checkbox" (change)="toggleProductSelection($event, file)" /></td>
+                            <td (click)="showPreview(file.url)" style="cursor: pointer;">
+                                {{ file.name }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </cdk-virtual-scroll-viewport>
+        </div>
     </div>
 </div>
+
+<!-- src/app/chat/chat.component.html -->
+<div class="chat-container" (click)="onChatContainerClick($event)">
+    <!-- Floating Chat Button -->
+    <button class="floating-btn" (click)="toggleChatWindow()">
+        💬
+    </button>
+
+    <!-- Chat Window -->
+    <div class="chat-window" *ngIf="isChatOpen">
+        <div class="header">
+            <h2>Chat</h2>
+            <button class="close-btn" (click)="toggleChatWindow()">X</button>
+        </div>
+
+        <!-- Messages Container -->
+        <div class="messages-container">
+            <div *ngFor="let message of messages" class="message-box" [ngStyle]="{'border-color': message.color}">
+                <div class="message-content">
+                    <span class="username" [ngStyle]="{'color': message.color}">{{ message.username }}:</span>
+                    <p>{{ message.msg }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="input-container">
+            <input [(ngModel)]="message" placeholder="Type a message..." />
+            <button class="btn-violet" (click)="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+
+
 
 <!-- Modal for File Upload -->
 <div class="modal" id="fileUploadModal" aria-labelledby="fileUploadModalLabel" tabindex="-1" *ngIf="isUploadModalOpen">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="fileUploadModalLabel">Upload Profile Picture</h5>
+                <h5 class="modal-title" id="fileUploadModalLabel">Upload file</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                     (click)="closeModal()"></button>
             </div>
             <div class="modal-body">
-                <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
-                    (drop)="onDrop($event)">
-                    <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
-                        accept="image/*">
-                    <p class="text-muted">Or drag and drop a file here</p>
+                <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+                    <i class="bi bi-cloud-upload-fill cloud-icon mb-3" style="font-size: 48px; color: #007bff;"></i>
+                    <!-- Cloud Upload Icon -->
+                    <p class="text-muted mb-3">Drag and drop a file here or</p>
+                    <input type="file"   id="fileInput" class="filein form-control mb-3" (change)="onFileSelected($event)">
                     <button class="btn btn-success" (click)="uploadFile()">Upload</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
 
 <!-- Image Preview Modal -->
 <div *ngIf="isPreviewOpen" class="modal" tabindex="-1" style="display: block;">
@@ -62,18 +108,24 @@
                 <ng-container *ngIf="fileType === 'image'">
                     <img [src]="selectedFileURL" alt="Image Preview" class="img-fluid" />
                 </ng-container>
-            
                 
-            
                 <ng-container *ngIf="fileType === 'video'">
-                    <video controls [src]="selectedFileURL" width="100%" height="400px">
-                    </video>
+                    <video controls [src]="selectedFileURL" width="100%" height="400px"></video>
                 </ng-container>
-            
+                
+                <ng-container *ngIf="fileType === 'pdf'">
+                    <embed [src]="selectedFileURL" type="application/pdf" width="100%" height="600px" />
+                </ng-container>
+                
+               
+                <ng-container *ngIf="fileType === 'xlsx'">
+                    <iframe [src]="xlsxUrl" width="100%" height="600px"></iframe>
+                </ng-container>
+
                 <ng-container *ngIf="fileType === 'other'">
-                    <p>This file cannot be previewed. You can <a [href]="selectedFileURL" target="_blank">download it</a> instead.
-                    </p>
+                    <p>This file cannot be previewed. You can <a [href]="selectedFileURL" target="_blank">download it</a> instead.</p>
                 </ng-container>
+
             </div>
         </div>
     </div>

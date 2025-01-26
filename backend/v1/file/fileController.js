@@ -1,17 +1,44 @@
 const fileService = require("./fileService");
 const logger = require("../../logger");
+const s3Utils = require("../../aws/s3Utils"); // Import S3 utility
+const jwt = require("jsonwebtoken");
 
 module.exports = {
   // Upload file route controller
   uploadFile: async (req, res) => {
     try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(403).send("Token Required");
+      }
+      const decoded = jwt.verify(token, "godisgreat");
+      const user_id = decoded.id;
       const fileContent = Buffer.from(
         req.files.uploadedFileName.data,
         "binary"
       );
-      const fileURL = await fileService.uploadToS3(
+      const extension = req.files.uploadedFileName.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+      // Default Content-Type
+      let contentType = "application/octet-stream";
+
+      // Try to infer Content-Type based on file extension
+      if (extension === "pdf") contentType = "application/pdf";
+      else if (extension === "jpg" || extension === "jpeg")
+        contentType = "image/jpeg";
+      else if (extension === "png") contentType = "image/png";
+      else if (extension === "txt") contentType = "text/plain";
+      else if (extension === "xlsx")
+        contentType =
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // For Excel files
+
+      const fileURL = await s3Utils.uploadToS3(
         fileContent,
-        req.files.uploadedFileName.name
+        user_id + "/product/" + req.files.uploadedFileName.name,
+        contentType
       );
 
       res.json({ fileURL });
@@ -22,30 +49,43 @@ module.exports = {
   },
 
   // Add file URL to the database route controller
-  addFile: async (req, res) => {
-    try {
-      const { fileURL } = req.body;
+  // addFile: async (req, res) => {
+  //   try {
+  //     const { fileURL } = req.body;
 
-      if (!fileURL) {
-        return res.status(400).json({ message: "fileURL is required" });
-      }
+  //     if (!fileURL) {
+  //       return res.status(400).json({ message: "fileURL is required" });
+  //     }
 
-      const fileId = await fileService.addFileToDatabase(fileURL);
+  //     const fileId = await fileService.addFileToDatabase(fileURL);
 
-      res.status(201).json({
-        message: "File added successfully",
-        fileId,
-      });
-    } catch (error) {
-      logger.error(error);
-      res.status(500).send("Error adding file");
-    }
-  },
+  //     res.status(201).json({
+  //       message: "File added successfully",
+  //       fileId,
+  //     });
+  //   } catch (error) {
+  //     logger.error(error);
+  //     res.status(500).send("Error adding file");
+  //   }
+  // },
 
   // List files route controller
   listFiles: async (req, res) => {
     try {
-      const files = await fileService.getFilesFromDatabase();
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(403).send("Token Required");
+      }
+      const decoded = jwt.verify(token, "godisgreat");
+      const user_id = decoded.id;
+      const data = await s3Utils.getFileFromS3(user_id + "/product") //fileService.getFilesFromDatabase();
+      const files = data.Contents.map((file) => ({
+        name: file.Key.split("/").pop(),
+        url: `https://akv-interns.s3.ap-south-1.amazonaws.com/${file.Key}`,
+      }));
+      console.log(files);
+      // const urls = files.map((file) => file.url);
+      // console.log(urls);
       res.json(files);
     } catch (error) {
       logger.error(error);

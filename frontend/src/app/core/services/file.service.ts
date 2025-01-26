@@ -21,13 +21,13 @@ export class FileService {
     return this.http.post('http://localhost:3000/files', formData);
   }
 
-  add(fileURL: any) {
-    this.http.post('http://localhost:3000/files/add', { fileURL }).subscribe({
-      next: (response) => {
-        console.log("file uploaded to database");
-      }
-    });
-  }
+  // add(fileURL: any) {
+  //   this.http.post('http://localhost:3000/files/add', { fileURL }).subscribe({
+  //     next: (response) => {
+  //       console.log("file uploaded to database");
+  //     }
+  //   });
+  // }
 
   downloadAll(fileUrls: any[]): Observable<any>{
     return this.http.post('http://localhost:3000/files/download-all',

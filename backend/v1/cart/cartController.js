@@ -48,6 +48,7 @@ module.exports = {
       res.json(cartItems);
     } catch (error) {
       logger.error(error);
+      console.log(error);
       res.status(500).send("Error fetching products");
     }
   },
@@ -62,5 +63,36 @@ module.exports = {
         res.status(500).send("Error updating product status");
       }
     },
+
+  adjustQuantity: async (req, res) => {
+     const { user_id, cart_id, product_name, amount } = req.body;
+
+     try {
+       // Validate input
+       if (typeof amount !== "number" || amount === 0) {
+         return res.status(400).json({ message: "Invalid amount" });
+       }
+
+       // Call the service function to adjust quantities
+       const result = await cartService.adjustQuantityInCart(
+         user_id,
+         cart_id,
+         product_name,
+         amount
+       );
+
+       // Respond with the updated data
+       return res.status(200).json({
+         message: "Quantity adjusted successfully",
+         newCartQuantity: result.newCartQuantity,
+         newProductStock: result.newProductStock,
+       });
+     } catch (error) {
+       console.error("Error adjusting quantity:", error);
+       return res
+         .status(500)
+         .json({ message: "Error adjusting quantity", error: error.message });
+     }
+   }
   
 };

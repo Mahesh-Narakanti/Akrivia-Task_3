@@ -27,6 +27,7 @@ export class LoginComponent implements OnInit {
       this.authService.login(this.loginForm.value.user, this.loginForm.value.password).subscribe({
         next: (response) => {
           sessionStorage.setItem('token', response.token);
+          sessionStorage.setItem('refreshToken', response.refreshToken);
           alert("login successfull");
           this.router.navigate(['/dashboard'], { state: { user: response.userData } });
         },

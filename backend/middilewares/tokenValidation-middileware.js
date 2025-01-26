@@ -9,7 +9,20 @@ const validateToken = (req, res, next) => {
   try {
     jwt.verify(token, "godisgreat", (err, decoded) => {
       if (err) {
-        return res.status(401).json({ message: "Token expired or invalid" });
+        if (err.name === "TokenExpiredError") {
+          console.log(err);
+          const error = new Error(err.name);
+          error.statusCode = 401;
+          return next(error);
+        }
+        else
+        {
+          const error = new Error(err.name);
+          error.statusCode = 401;
+          return next(error);
+
+          }
+
       }
 
       req.user = decoded;

@@ -10,7 +10,11 @@ import { AuthService } from 'src/app/core/services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup | any;
-  constructor(private fb: FormBuilder , private authService:AuthService , private router:Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
@@ -22,18 +26,23 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit(): void {
-      this.authService.signUp(this.registerForm.value.firstName, this.registerForm.value.lastName, this.registerForm.value.email, this.registerForm.value.password)
-        .subscribe({
-          next: (response) => {
-            console.log(response);
-            alert("You are successfully registered");
-            this.router.navigate(['/login']);
-          },
-          error: (err) => {
-            console.log("error: " + err);
-            alert("signup failed");
-          }
-        });
+    this.authService
+      .signUp(
+        this.registerForm.value.firstName,
+        this.registerForm.value.lastName,
+        this.registerForm.value.email,
+        this.registerForm.value.password
+      )
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          alert('You are successfully registered');
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          console.log('error: ' + err);
+          alert('signup failed');
+        },
+      });
   }
-
 }

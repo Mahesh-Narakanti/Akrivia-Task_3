@@ -5,25 +5,31 @@ const s3Utils = require("../aws/s3Utils"); // Importing the S3 utility from the 
 const router = express.Router();
 const knexConfig = require("../mysql/knexfile");
 const knex = require("knex")(knexConfig);
+const jwt = require("jsonwebtoken");
 // Upload Route
 router.post("/", async (req, res) => {
   try {
     // Binary data base64
-
+    const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(403).send("Token Required");
+      }
+    const decoded = jwt.verify(token, "godisgreat");
+    const user_id = decoded.id;
     const fileContent = Buffer.from(req.files.uploadedFileName.data, "binary");
 
     const originalImageURL = await s3Utils.uploadToS3(
       fileContent,
-      "profile-pics/" + req.files.uploadedFileName.name
+      user_id + "/profile-pics/" + req.files.uploadedFileName.name,
+      "image/jpeg"
     );
 
-    const thumbnailBuffer = await sharp(fileContent)
-      .resize(50, 50) 
-      .toBuffer();
+    const thumbnailBuffer = await sharp(fileContent).resize(50, 50).toBuffer();
 
     const thumbnailURL = await s3Utils.uploadToS3(
       thumbnailBuffer,
-      "thumbnails/" + req.files.uploadedFileName.name
+      user_id + "/thumbnails/" + req.files.uploadedFileName.name,
+      "image/jpeg"
     );
 
     // Send back URLs for both original and thumbnail
@@ -68,7 +74,7 @@ router.post("/import", async (req, res) => {
           } else {
             const [category] = await knex("categories").insert({
               category_name: categoryName,
-              status: 1,
+              status: "active",
             });
             insertedCategories[categoryName] = category[0];
           }
@@ -98,11 +104,14 @@ router.post("/import", async (req, res) => {
           if (existingVendor) {
             insertedVendors[vendorName] = existingVendor.vendor_id;
           } else {
-            const [vendor] = await knex("vendors").insert({
+            await knex("vendors").insert({
               vendor_name: vendorName,
-              status: 1,
+              status: "active",
             });
-            insertedVendors[vendorName] = vendor[0];
+const vendor = await knex("vendors")
+  .where("vendor_name", vendorName)
+  .first();
+            insertedVendors[vendorName] = vendor.vendor_id;
           }
         }
       })
@@ -119,32 +128,37 @@ router.post("/import", async (req, res) => {
         const vendorIds = product.vendors.map(
           (vendor) => insertedVendors[vendor.vendor_name]
         );
+        const existingProduct = await knex("products")
+          .select("product_name")
+          .where("product_name", product.product_name)
+          .first(); 
+        if (!existingProduct) {
+          const [insertedProduct] = await knex("products").insert({
+            product_name: product.product_name,
+            category_id: categoryId,
+            quantity_in_stock: product.quantity_in_stock,
+            unit_price: product.unit_price,
+            product_image: product.product_image,
+            status: "1", // Default status to active
+          });
+          console.log(vendorIds);
+          const [productId] = await knex.raw(
+            "SELECT product_id FROM products WHERE product_name = ? ORDER BY product_id DESC LIMIT 1",
+            [product.product_name]
+          );
+          // Step 4: Associate Vendors with the Product
+          await Promise.all(
+            vendorIds.map(async (vendorId) => {
+              await knex("product_to_vendor").insert({
+                product_id: productId[0].product_id,
+                vendor_id: vendorId,
+                status: 1, // Default status to active
+              });
+            })
+          );
 
-        const [insertedProduct] = await knex("products").insert({
-          product_name: product.product_name,
-          category_id: categoryId,
-          quantity_in_stock: product.quantity_in_stock,
-          unit_price: product.unit_price,
-          product_image: product.product_image,
-          status: "1", // Default status to active
-        });
-        console.log(vendorIds);
-        const [productId] = await knex.raw(
-          "SELECT product_id FROM products WHERE product_name = ? ORDER BY product_id DESC LIMIT 1",
-          [product.product_name]
-        );
-        // Step 4: Associate Vendors with the Product
-        await Promise.all(
-          vendorIds.map(async (vendorId) => {
-            await knex("product_to_vendor").insert({
-              product_id: productId[0].product_id,
-              vendor_id: vendorId,
-              status: 1, // Default status to active
-            });
-          })
-        );
-
-        insertedProducts.push(insertedProduct);
+          insertedProducts.push(insertedProduct);
+        }
       })
     );
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from  '@angular/common/http'
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -38,17 +38,15 @@ export class AuthService {
     });
   }
 
-
   uploadFile(file: File): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('uploadedFileName', file, file.name);
-   
-    return this.http.post('http://localhost:3000/upload', formData);
+
+    return this.http.post(`http://localhost:3000/upload`, formData);
   }
 
   isAuthentic(): Observable<boolean> {
     const token = window.sessionStorage.getItem('token');
-    
 
     if (token) {
       return this.http.get('http://localhost:3000/api/protected-data').pipe(
@@ -64,5 +62,24 @@ export class AuthService {
     } else {
       return of(false);
     }
+  }
+
+  refreshToken(): Observable<string> {
+    return this.http
+      .post<{ token: string }>(
+        `http://localhost:3000/auth/refresh-token`,
+        {
+          refreshToken: sessionStorage.getItem('refreshToken'),
+        }
+      )
+      .pipe(
+        switchMap((response) => {
+          
+          sessionStorage.setItem('token', response.token);
+          return new Observable<string>((observer) =>
+            observer.next(response.token)
+          );
+        })
+      );
   }
 }

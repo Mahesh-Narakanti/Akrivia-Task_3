@@ -50,32 +50,36 @@ module.exports = {
     if (status === 0) {
       curstatus = "default";
     }
+    const isThere = await knex("products").where("product_name", product_name).andWhereNot("status","deleted").first();
+    if (!isThere) {
+      const [newProduct] = await knex("products").insert({
+        product_name,
+        status: curstatus,
+        category_id: category_name,
+        quantity_in_stock,
+        unit_price,
+        product_image,
+        full_image,
+      });
 
-    const [newProduct] = await knex("products").insert({
-      product_name,
-      status: curstatus,
-      category_id: category_name,
-      quantity_in_stock,
-      unit_price,
-      product_image,
-      full_image,
-    });
+      const [productId] = await knex.raw(
+        "SELECT product_id FROM products WHERE product_name = ? ORDER BY product_id DESC LIMIT 1",
+        [product_name]
+      );
 
-    const [productId] = await knex.raw(
-      "SELECT product_id FROM products WHERE product_name = ? ORDER BY product_id DESC LIMIT 1",
-      [product_name]
-    );
+      if (vendors && vendors.length > 0) {
+        const vendorAssociations = vendors.map((vendorId) => ({
+          product_id: productId[0].product_id,
+          vendor_id: vendorId,
+        }));
 
-    if (vendors && vendors.length > 0) {
-      const vendorAssociations = vendors.map((vendorId) => ({
-        product_id: productId[0].product_id,
-        vendor_id: vendorId,
-      }));
+        await knex("product_to_vendor").insert(vendorAssociations);
+      }
+    
 
-      await knex("product_to_vendor").insert(vendorAssociations);
+      return newProduct;
     }
-
-    return newProduct;
+    return null;
   },
 
   // Delete a product (soft delete)

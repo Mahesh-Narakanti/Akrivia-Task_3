@@ -62,10 +62,14 @@ module.exports = {
         product_image,
         full_image,
       });
-      res.status(201).json({
-        message: "Product added successfully",
-        productId: newProduct.product_id,
-      });
+
+      if (newProduct) {
+        return res.status(201).json({
+          message: "Product added successfully",
+          productId: newProduct.product_id,
+        });
+      }
+      return res.status(400).send("product already exist");
     } catch (err) {
       logger.error("Error adding product:", err);
       res.status(500).send("Error adding product");

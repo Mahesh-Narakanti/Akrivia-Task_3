@@ -29,10 +29,10 @@ module.exports = {
     }
 
     const token = jwt.sign({ id: curUser.id }, "godisgreat", {
-      expiresIn: "1hr",
+      expiresIn: "30m",
     });
-
-    return { token };
+    const refreshToken = jwt.sign({ id: curUser.id }, "godisdoublegreat", { expiresIn: "1d" });
+    return { token ,refreshToken};
   },
 
   // Get user from decoded token
@@ -46,4 +46,21 @@ module.exports = {
     const decoded = jwt.verify(token, "godisgreat");
     await userQuery.updateProfilePic(decoded.id, profilePicUrl, thumbnailUrl);
   },
+
+  updateToken: async (refreshToken) => {
+    let newToken = null;
+    await jwt.verify(refreshToken, "godisdoublegreat", (err, decoded) => {
+          if (err) {
+            const error = new Error(err.name);
+            error.statusCode = 401;
+            return next(error);
+          }
+    
+           newToken = jwt.sign({ id: decoded.id }, "godisgreat", {
+            expiresIn: "30m",
+          });
+      //console.log(newToken);
+    });
+    return {newToken};
+  }
 };

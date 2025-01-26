@@ -8,45 +8,34 @@ import { RouterOutlet } from '@angular/router';
 import { LoginComponent } from './features/entry/login/login.component';
 import { RegisterComponent } from './features/entry/register/register.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { DashboardComponent } from './features/dashboard/dashboard/dashboard.component';
-import { InventoryComponent } from './shared/components/inventory/inventory.component';
-import { BucketComponent } from './features/dashboard/bucket/bucket.component';
-import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
+
 import { NgIf } from '@angular/common';
 import { HeaderInterceptor } from './core/interceptors/header-interceptor';
-import { TokenInterceptor } from './core/interceptors/token-interceptor';
+// import { TokenInterceptor } from './core/interceptors/token-interceptor';
 import { AddProductComponent } from './shared/components/add-product/add-product.component';
+import { EncryptionInterceptor } from './core/interceptors/encryption.interceptor';
+import { AuthModule } from './features/entry/auth/auth.module';
+import { FeatureModule } from './features/dashboard/feature/feature.module';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    LoginComponent,
-    RegisterComponent,
-    DashboardComponent,
-    InventoryComponent,
-    BucketComponent,
-    FileUploadComponent,
-    AddProductComponent,
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    FormsModule,
-    ReactiveFormsModule,
-  ],
+  declarations: [AppComponent],
+  imports: [AppRoutingModule, BrowserModule, HttpClientModule],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: EncryptionInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HeaderInterceptor,
       multi: true,
     },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: TokenInterceptor,
-      multi: true,
-    },
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: TokenInterceptor,
+    //   multi: true,
+    // },
   ],
   bootstrap: [AppComponent],
 })

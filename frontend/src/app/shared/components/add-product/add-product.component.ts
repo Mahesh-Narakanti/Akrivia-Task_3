@@ -107,6 +107,8 @@ export class AddProductComponent implements OnInit {
             this.closeAddProductModal();
           },
           error: (err) => {
+            alert("this product cant be added");
+            this.closeAddProductModal();
             console.error('Error adding product:', err);
           },
         });

@@ -47,7 +47,7 @@ router.get("/products", async (req, res) => {
       )
       .select("products.*", "categories.category_name", "vendors.vendor_name")
       .whereNot("products.status", "deleted");
-
+    
     // Step 2: Search based on selected filter columns
     if (searchQuery) {
       const search = searchQuery.toLowerCase();
@@ -159,12 +159,14 @@ router.get("/products", async (req, res) => {
         };
       }
     });
-
     const totalProducts = Object.keys(productsWithVendorsMap).length; // Correct length calculation
     const totalPages = Math.ceil(totalProducts / limit);
 
+    let productsWithVendors = Object.values(productsWithVendorsMap).sort(
+      (a, b) => a.product_name.localeCompare(b.product_name)
+    );
     // Step 3: Apply pagination (manual limit and offset)
-    const productsWithVendors = Object.values(productsWithVendorsMap).slice(
+    productsWithVendors =productsWithVendors.slice(
       (page - 1) * limit,
       page * limit
     ); // Manually paginate the array

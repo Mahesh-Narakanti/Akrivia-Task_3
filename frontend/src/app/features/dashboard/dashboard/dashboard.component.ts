@@ -15,8 +15,9 @@ declare global {
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
-  userData: { id?: string; profile_pic?: string; username?: string } = {};
+  userData: { id?: string; profile_pic?: string; username?: string,email?:string } = {};
   selectedFile: File | null = null;
+  
 
   constructor(private auth: AuthService , private router:Router) {
     this.auth.getUser().subscribe({
@@ -24,6 +25,7 @@ export class DashboardComponent implements OnInit {
         this.userData.id = response.id;
         this.userData.profile_pic = response.thumbnail;
         this.userData.username = response.username;
+        this.userData.email = response.email;
         console.log("here: "+response.thumbnail);
       },
     });

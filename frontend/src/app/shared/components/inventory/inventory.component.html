@@ -6,10 +6,10 @@
                 <small class="text-muted">number of Vendors {{vendors.length}}</small>
             </div>
             <div *ngIf="toggleView === 'viewAll'">
-                <button class="btn btn-light border btn-sm me-2" (click)="openCartModal()">
+                <button class="btn btn-light border btn-sm me-2" [disabled]="selectedProducts.length===0?true:false" (click)="openCartModal()">
                     <i class="bi bi-cart-fill"></i> Move to Cart
                 </button>
-                <button class="btn btn-light border btn-sm me-2" (click)="downloadAll()">
+                <button class="btn btn-light border btn-sm me-2"  (click)="downloadAll()">
                     <i class="bi bi-download"></i> Download All
                 </button>
                 <button class="btn btn-light border btn-sm me-2" (click)="openImportModal()">
@@ -24,16 +24,16 @@
         <!-- Toggle and Filters -->
         <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
             <div class="btn-group rounded">
-                <button class="btn btn-light active border border-secondary btn-sm"
+                <button [ngClass]="toggleView==='viewAll'?class1:class2"
                     (click)="toggleViewSelection('viewAll')"> View All</button>
-                <button class="btn btn-light border border-secondary btn-sm" (click)="toggleViewSelection('cart')">
+                <button [ngClass]="toggleView==='cart'?class1:class2" (click)="toggleViewSelection('cart')">
                     Cart</button>
             </div>
             <div class="d-flex align-items-center">
                 <input type="text" class="form-control me-2" style="height: 80%; width: 350px;" placeholder="Search..."
                     (input)="onSearchChange($event)" />
 
-                <div class="dropdown">
+                <div *ngIf="toggleView === 'viewAll'" class="dropdown">
                     <button class="btn btn-light border btn-sm d-flex align-items-center gap-2" type="button"
                         id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-funnel"></i> Filter
@@ -41,6 +41,23 @@
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <!-- Loop through columns and create checkboxes -->
                         <li *ngFor="let column of filterColumns">
+                            <div class="form-check">
+                                <!-- Directly bind change event to update selectedFilterColumns -->
+                                <input class="form-check-input" type="checkbox" [value]="column.value"
+                                    (change)="toggleFilterSelection($event, column.value)">
+                                <label class="form-check-label">{{ column.label }}</label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div *ngIf="toggleView === 'cart'" class="dropdown">
+                    <button class="btn btn-light border btn-sm d-flex align-items-center gap-2" type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <!-- Loop through columns and create checkboxes -->
+                        <li *ngFor="let column of cartFilterColumns">
                             <div class="form-check">
                                 <!-- Directly bind change event to update selectedFilterColumns -->
                                 <input class="form-check-input" type="checkbox" [value]="column.value"
@@ -97,9 +114,13 @@
                     </td>
                     <td>
                         <span *ngIf="!isEditMode(product)">
-                            <span class="badge bg-light text-dark" *ngFor="let vendor of product.vendors">{{
-                                vendor.vendor_name
-                                }}</span>
+                            <span *ngFor="let vendor of product.vendors.slice(0, 2)">
+                                <span class="badge bg-light text-dark">{{ vendor.vendor_name }}</span>
+                            </span>
+                            <!-- Display remaining count if there are more than 2 vendors -->
+                            <span *ngIf="product.vendors.length > 2" class="badge bg-light text-dark" [attr.title]="getRemainingVendorsTooltip(product.vendors)">
+                                +{{ product.vendors.length - 2 }} 
+                            </span>
                         </span>
                         <div *ngIf="isEditMode(product)">
                             <div>
@@ -160,7 +181,7 @@
                 </tr>
             </thead>
             <tbody *ngIf="toggleView === 'cart'">
-                <tr *ngFor="let item of cartIt">
+                <tr *ngFor="let item of filterCart()">
                     <td><img [src]="item.product_image" alt="" class="rounded-circle me-2" />
                         <span>{{ item.product_name }}</span>
                     </td>
@@ -172,9 +193,9 @@
 
                     </td>
                     <td>
-                        <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, -1)">-</button>
+                        <button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, -1)">-</button>
                         <span class="quantity-display">{{ item.quantity }}</span> <!-- Quantity displayed in between -->
-                        <button class="btn btn-light btn-sm" (click)="adjustQuantity(item, 1)">+</button>
+                        <button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, 1)">+</button>
                     </td>
                     <td>
                         <button class="btn btn-light btn-sm" (click)="removeFromCart(item)"><i
@@ -187,13 +208,28 @@
 
 
         <!-- Pagination -->
-        <div *ngIf="toggleView === 'viewAll' && totalPages > 1" class="d-flex justify-content-center mt-4">
-            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage - 1)"
-                [disabled]="currentPage === 1">Previous</button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <div *ngIf="toggleView === 'viewAll' && totalPages > 1" class="d-flex justify-content-between align-items-center mt-4">
+            <!-- Previous Button on the Left -->
+            <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+                <span>&#8592;</span> Previous
+            </button>
+        
+            <!-- Page Numbers in the Middle -->
+            <div class="d-flex justify-content-center">
+                <ng-container *ngFor="let page of getPageNumbers()">
+                    <button class="btn btn-sm" (click)="goToPage(page)" [class.active]="page === currentPage">
+                        {{ page }}
+                    </button>
+                </ng-container>
+            </div>
+        
+            <!-- Next Button on the Right -->
             <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage + 1)"
-                [disabled]="currentPage === totalPages">Next</button>
+                [disabled]="currentPage === totalPages">
+                Next <span>&#8594;</span>
+            </button>
         </div>
+
     </div>
 </div>
 
@@ -239,7 +275,7 @@
                             </td>
 
                             <td>
-                                <button class="btn btn-danger btn-sm" (click)="removeFromCart(item)">Delete</button>
+                                <button class="btn btn-danger btn-sm" (click)="removeProductCart(item)">Delete</button>
                             </td>
                         </tr>
                     </tbody>
@@ -262,7 +298,7 @@
                 <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
             </div>
             <div class="modal-body">
-                <app-add-product *ngIf="isAddProductModalOpen" [categories]="categories" [vendors]="vendors"
+                <app-add-product *ngIf="isAddProductModalOpen" [categories]="categories" [vendors]="vendors" 
                     (closeProductModal)="closeAddProductModal()">
                 </app-add-product>
             </div>
@@ -273,19 +309,22 @@
 
 <!-- Modal for Import -->
 <div class="modal" id="importModal" tabindex="-1" *ngIf="isImportModalOpen">
-    <div class="modal-dialog imp-modal">
+    <div class="modal-dialog i-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">Import Products</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="fileUploadModalLabel">Import file</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    (click)="closeImportModal()"></button>
             </div>
             <div class="modal-body">
-                <input type="file" (change)="onFileChange($event)" accept=".xlsx, .xls, .csv" />
-                <div *ngIf="errorMessage" class="text-danger mt-2">{{ errorMessage }}</div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeImportModal()">Close</button>
-                <button type="button" class="btn btn-primary" (click)="uploadData()">Upload</button>
+                <div class="border p-3 text-center" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()"
+                    (drop)="onDrop($event)">
+                    <i class="bi bi-cloud-upload-fill cloud-icon mb-3" style="font-size: 48px; color: #007bff;"></i>
+                    <!-- Cloud Upload Icon -->
+                    <p class="text-muted mb-3">Drag and drop a file here or</p>
+                    <input type="file" id="fileInput" class="filein form-control mb-3" (change)="onFileChange($event)">
+                    <button class="btn btn-success" (click)="uploadData()">Upload</button>
+                </div>
             </div>
         </div>
     </div>
