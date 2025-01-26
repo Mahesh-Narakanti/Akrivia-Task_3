@@ -100,9 +100,11 @@ module.exports = {
     unit_price,
   }) => {
     let curstatus = "active";
-    if (status === 0) {
+    if (status === '0') {
       curstatus = "default";
     }
+    else if (status === '2')
+      curstatus = "inactive";
 
     await knex("products").where("product_id", product_id).update({
       product_name,

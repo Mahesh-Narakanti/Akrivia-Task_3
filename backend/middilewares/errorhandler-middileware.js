@@ -16,7 +16,7 @@ const errorHandler = (err, req, res, next) => {
     // Send generic error for other types of errors
     res.status(statusCode).json({
       status: "error",
-      message,
+      name: "JsonWebTokenError",
     });
   }
 };
