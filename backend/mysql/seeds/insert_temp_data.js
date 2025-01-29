@@ -6,6 +6,7 @@ exports.seed = function (knex) {
     .then(() => knex("vendors").del())
     .then(() => knex("products").del())
     .then(() => knex("categories").del())
+    .then(() => knex("carts").del()) // Clear carts table
     .then(function () {
       // Inserts seed entries into the categories table
       return knex("categories").insert([
@@ -273,6 +274,47 @@ exports.seed = function (knex) {
           profile_pic: "david.jpg",
           thumbnail: "david_thumbnail.jpg",
           status: "active",
+        },
+      ]);
+    })
+    .then(function () {
+      // Inserts seed entries into the carts table
+      return knex("carts").insert([
+        {
+          id: 1, // user id for Alice
+          product_name: "Smartphone",
+          quantity: 2,
+          vendor_name: "Tech World",
+          category: "Electronics",
+          product_image: "smartphone.jpg",
+          status: "1", // Active cart item
+        },
+        {
+          id: 2, // user id for Bob
+          product_name: "Jeans",
+          quantity: 3,
+          vendor_name: "Fashion Hub",
+          category: "Clothing",
+          product_image: "jeans.jpg",
+          status: "1", // Active cart item
+        },
+        {
+          id: 3, // user id for Charlie
+          product_name: "Toy Car",
+          quantity: 5,
+          vendor_name: "Toy World",
+          category: "Toys",
+          product_image: "toy_car.jpg",
+          status: "1", // Active cart item
+        },
+        {
+          id: 4, // user id for David
+          product_name: "Shampoo",
+          quantity: 2,
+          vendor_name: "Beauty Shop",
+          category: "Beauty",
+          product_image: "shampoo.jpg",
+          status: "1", // Active cart item
         },
       ]);
     });

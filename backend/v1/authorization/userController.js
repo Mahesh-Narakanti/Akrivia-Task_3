@@ -13,11 +13,9 @@ module.exports = {
       password: Joi.string().min(6).required(),
     });
 
-    // Validate the request body using the schema
     const { error } = schema.validate(req.body);
 
     if (error) {
-      // If validation fails, send a 400 status with the error details
       return res.status(400).json({ message: error.details[0].message });
     }
     const { firstName, lastName, email, password } = req.body;

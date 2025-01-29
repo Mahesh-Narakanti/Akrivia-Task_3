@@ -96,7 +96,7 @@
                     <td>
                         <span *ngIf="!isEditMode(product)" class="badge"
                             [ngStyle]="{ color: ((product.quantity_in_stock > 0) && (product.status !='inactive')) ? 'green' : 'red' }">
-                            {{((product.quantity_in_stock > 0) && (product.status !='inactive')) ? 'Available' : 'Out of stock' }}
+                            {{((product.quantity_in_stock > 0) && (product.status !='inactive')) ? 'Available' : ((product.quantity_in_stock ==0) ?'Out of stock':'currently unavailable' )}}
                         </span>
                         <select *ngIf="isEditMode(product)" [(ngModel)]="product.status" class="form-control">
                             <option value="1">Active</option>

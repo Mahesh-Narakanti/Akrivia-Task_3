@@ -139,7 +139,7 @@ const vendor = await knex("vendors")
             quantity_in_stock: product.quantity_in_stock,
             unit_price: product.unit_price,
             product_image: product.product_image,
-            status: "1", // Default status to active
+            status: "active", // Default status to active
           });
           console.log(vendorIds);
           const [productId] = await knex.raw(

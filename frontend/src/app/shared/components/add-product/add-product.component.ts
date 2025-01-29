@@ -36,23 +36,19 @@ export class AddProductComponent implements OnInit {
 
   onVendorChange(event: any, vendorId: number): void {
     if (event.target.checked) {
-      // If checked, add the vendor ID to the array
       this.selectedVendors.push(vendorId);
     } else {
-      // If unchecked, remove the vendor ID from the array
       const index = this.selectedVendors.indexOf(vendorId);
       if (index > -1) {
         this.selectedVendors.splice(index, 1);
       }
     }
 
-    // Update the form control for vendors
     this.productForm.patchValue({
       vendors: this.selectedVendors,
     });
   }
 
-  // Check if a vendor is selected
   isVendorSelected(vendorId: number): boolean {
     return this.selectedVendors.includes(vendorId);
   }
@@ -70,21 +66,19 @@ export class AddProductComponent implements OnInit {
         full_image: '',
       };
       console.log(payload);
-      // If an image is selected, upload it first and then proceed with the product submission
+
       if (this.selectedImage) {
         this.auth
           .uploadFile(this.selectedImage)
           .pipe(
             map((response) => ({
               thumbnailUrl: response.thumbnailUrl,
-              profilePicUrl: response.profilePicUrl, // Assuming profilePicUrl is part of the response
+              profilePicUrl: response.profilePicUrl,
             })),
             switchMap((urls) => {
-              // Add the image URLs to the payload
               payload.product_image = urls.thumbnailUrl;
-              payload.full_image = urls.profilePicUrl; // Set the full_image with the profilePicUrl from response
+              payload.full_image = urls.profilePicUrl;
 
-              // Now make the API request with the updated payload
               return this.productService.addProduct(payload);
             })
           )
@@ -127,10 +121,11 @@ export class AddProductComponent implements OnInit {
       this.selectedImage = null;
       this.productForm.patchValue({ product_image: null });
     }
-
   }
+
 
   closeAddProductModal() {
     this.closeProductModal.emit();
   }
+
 }

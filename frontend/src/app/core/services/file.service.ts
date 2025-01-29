@@ -29,11 +29,11 @@ export class FileService {
   //   });
   // }
 
-  downloadAll(fileUrls: any[]): Observable<any>{
-    return this.http.post('http://localhost:3000/files/download-all',
+  // downloadAll(fileUrls: any[]): Observable<any>{
+  //   return this.http.post('http://localhost:3000/files/download-all',
 
-      { fileUrls },
-      { responseType: 'blob' }
-    );
-  }
+  //     { fileUrls },
+  //     { responseType: 'blob' }
+  //   );
+  // }
 }

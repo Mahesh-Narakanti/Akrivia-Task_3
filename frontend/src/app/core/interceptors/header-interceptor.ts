@@ -37,13 +37,13 @@ export class HeaderInterceptor implements HttpInterceptor {
           alert("token expired refreshing token");
           // this.isRefreshing = true;
           return this.authService.refreshToken().pipe(
-            switchMap((newAccessToken: string) => {
-              this.isRefreshing = false;
+            switchMap((response) => {
               // Clone the original request and add the new access token
-              console.log(newAccessToken);
+              sessionStorage.setItem("token", response.token);
+              console.log(response.token);
               const clonedRequest = request.clone({
                 setHeaders: {
-                  Authorization: `Bearer ${newAccessToken}`,
+                  Authorization: `Bearer ${response.token}`,
                 },
               });
 

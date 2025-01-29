@@ -1,13 +1,9 @@
-<!-- login.component.html -->
 <div class="container-fluid min-vh-100 d-flex">
-    <!-- Left Half: Login Form -->
     <div class="col-md-6 bg-white d-flex justify-content-center align-items-center">
         <div class="w-50">
-            <!-- Main Title -->
             <h2 class="text-left mb-4">Sign up</h2>
 
             <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-                <!-- Email/Username -->
                 <div class="form-group mb-2">
                     <label for="email" class="mt-3">First Name*</label>
                     <input type="text" class="form-control  shadow-sm" formControlName="firstName"
@@ -27,7 +23,6 @@
                         placeholder="Enter your email or username" required />
                 </div>
 
-                <!-- Password -->
                 <div class="form-group mb-4">
                     <label for="password" class="mt-3">Password*</label>
                     <input type="password" id="password" class="form-control shadow-sm"
@@ -35,11 +30,9 @@
                     <p>must be atleast 8 characters</p>
                 </div>
 
-                <!-- Sign up Button (Brinjal Color) -->
                 <button type="submit" class="btn" [disabled]="registerForm.invalid"
                     style="background-color: #6a0dad; color: white; border: none; padding: 10px 20px; width: 100%; border-radius: 7px;">Create account</button>
 
-                <!-- Sign Up Link (Brinjal Color) -->
                 <p class="text-center mt-4">
                     Already have an account?<a routerLink="/login"  style="color: #6a0dad;"> Log in</a>
                 </p>
@@ -47,7 +40,6 @@
         </div>
     </div>
 
-    <!-- Right Half: Image -->
     <div class="col-md-6 bg-light d-flex justify-content-center align-items-center">
         <img src="assets/Login-PNG-Photo.png" alt="Login Image" class="img-fluid rounded-circle"
             style="max-width: 100%; max-height: 100%;" />

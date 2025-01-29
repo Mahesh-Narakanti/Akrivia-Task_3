@@ -34,7 +34,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {}
 
   updateProfile(): void {
-    this.openModal(); // Open the file upload modal when "Update Profile" is clicked
+    this.openModal(); 
   }
 
   // Open the modal
@@ -45,22 +45,17 @@ export class DashboardComponent implements OnInit {
     modal.show();
   }
 
-  // Handle file selection
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
   }
 
-  // Handle drag over event (for drag-and-drop)
   onDragOver(event: DragEvent) {
-    event.preventDefault(); // Prevent default behavior to allow dropping
+    event.preventDefault(); 
   }
 
-  // Handle drag leave event
   onDragLeave() {
-    // Optional: Reset border or show effects on drag leave
   }
 
-  // Handle drop event for drag-and-drop
   onDrop(event: DragEvent) {
     event.preventDefault();
     const file = event.dataTransfer?.files[0];
@@ -96,9 +91,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // Logout logic
   logout(): void {
-    // Implement logout logic here
     sessionStorage.removeItem('token');
     this.router.navigate(['/login']);
   }

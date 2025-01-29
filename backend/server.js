@@ -24,15 +24,16 @@ app.use(
   cors()
 );
 app.use(fileUpload());
+
 app.use(express.json());
 app.use(limiter);
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: "http://localhost:4200", // Allow this specific origin to connect
-    methods: ["GET", "POST","PUT","DELETE"], // Allow these HTTP methods
-    allowedHeaders: ["Content-Type"], // Allow these headers
-    credentials: true, // Allow credentials (optional)
+    methods: ["GET", "POST","PUT","DELETE"], 
+    allowedHeaders: ["Content-Type"], 
+    credentials: true,
   },
 });
 

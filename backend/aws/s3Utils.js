@@ -23,7 +23,7 @@ async function uploadToS3(fileBuffer, key,contentType) {
   try {
     logger.info("Uploading to S3 with params:", params); 
     const data = await s3.upload(params).promise();
-    logger.info("Upload success:", data); 
+   // logger.info("Upload success:", data); 
     return data.Location;
   } catch (error) {
     logger.error("Error uploading to S3:", error); 

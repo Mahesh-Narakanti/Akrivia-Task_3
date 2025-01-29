@@ -64,22 +64,13 @@ export class AuthService {
     }
   }
 
-  refreshToken(): Observable<string> {
+  refreshToken(): Observable<any> {
     return this.http
       .post<{ token: string }>(
         `http://localhost:3000/auth/refresh-token`,
         {
           refreshToken: sessionStorage.getItem('refreshToken'),
         }
-      )
-      .pipe(
-        switchMap((response) => {
-          
-          sessionStorage.setItem('token', response.token);
-          return new Observable<string>((observer) =>
-            observer.next(response.token)
-          );
-        })
       );
   }
 }

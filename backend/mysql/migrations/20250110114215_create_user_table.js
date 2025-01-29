@@ -12,10 +12,7 @@ exports.up = function (knex) {
         table.timestamp("created_at").defaultTo(knex.fn.now());
       })
       .raw(
-        `
-      ALTER TABLE categories 
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-    `
+        `ALTER TABLE categories ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
       )
 
       // Create the products table
@@ -38,10 +35,7 @@ exports.up = function (knex) {
         table.timestamp("created_at").defaultTo(knex.fn.now());
       })
       .raw(
-        `
-      ALTER TABLE products
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-    `
+        `ALTER TABLE products ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
       )
 
       // Create the vendors table
@@ -60,10 +54,7 @@ exports.up = function (knex) {
         table.timestamp("created_at").defaultTo(knex.fn.now());
       })
       .raw(
-        `
-      ALTER TABLE vendors
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-    `
+        `ALTER TABLE vendors ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
       )
 
       // Create the product_to_vendor relationship table
@@ -87,10 +78,7 @@ exports.up = function (knex) {
         table.timestamp("created_at").defaultTo(knex.fn.now());
       })
       .raw(
-        `
-      ALTER TABLE product_to_vendor
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-    `
+        `ALTER TABLE product_to_vendor ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
       )
 
       // Create the users table
@@ -106,10 +94,26 @@ exports.up = function (knex) {
           .enu("status", ["default", "active", "inactive", "deleted"])
           .defaultTo("default");
         table.timestamp("created_at").defaultTo(knex.fn.now());
-      }).raw(`
-      ALTER TABLE users
-      ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
-    `)
+      })
+      .raw(
+        `ALTER TABLE users ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
+      )
+
+      // Create the carts table (new table added)
+      .createTable("carts", function (table) {
+        table.increments("cart_id").primary();
+        table.integer("id").unsigned().notNullable(); // Linking to user or other relevant table
+        table.string("product_name", 128);
+        table.integer("quantity").defaultTo(0);
+        table.string("vendor_name", 128);
+        table.string("category", 128);
+        table.string("product_image", 128);
+        table.timestamp("created_at").defaultTo(knex.fn.now());
+        table.enu("status", ["0", "1", "2", "99"]).defaultTo("0"); // Enum for cart item status
+      })
+      .raw(
+        `ALTER TABLE carts ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;`
+      )
   );
 };
 
@@ -119,5 +123,6 @@ exports.down = function (knex) {
     .dropTableIfExists("product_to_vendor")
     .dropTableIfExists("vendors")
     .dropTableIfExists("products")
-    .dropTableIfExists("categories");
+    .dropTableIfExists("categories")
+    .dropTableIfExists("carts"); // Drop the carts table when rolling back
 };

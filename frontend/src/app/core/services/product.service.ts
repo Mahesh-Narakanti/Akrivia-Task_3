@@ -71,7 +71,7 @@ export class ProductService {
   }
 
   addProduct(newProduct: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/product/addNew`, newProduct);
+    return  this.http.post(`${this.apiUrl}/product/addNew`, newProduct);
   }
 
   delete(productId: any): Observable<any> {

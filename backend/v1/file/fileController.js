@@ -79,9 +79,11 @@ module.exports = {
       const decoded = jwt.verify(token, "godisgreat");
       const user_id = decoded.id;
       const data = await s3Utils.getFileFromS3(user_id + "/product") //fileService.getFilesFromDatabase();
+      console.log(data);
       const files = data.Contents.map((file) => ({
         name: file.Key.split("/").pop(),
         url: `https://akv-interns.s3.ap-south-1.amazonaws.com/${file.Key}`,
+        size: file.Size
       }));
       console.log(files);
       // const urls = files.map((file) => file.url);

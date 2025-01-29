@@ -37,19 +37,14 @@ export class BucketComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Listen for authentication success and get the username
-    this.socketService.onAuthentication().subscribe((data) => {
-      if (data.username) {
-        this.username = data.username;
-        this.userColor = data.color;
-      }
-    });
     this.socketService.onMessage().subscribe((data) => {
       this.messages.push(data);
+      this.username = data.username;
+      this.userColor = data.color;
     });
     this.fileService.getFiles().subscribe((data) => {
       this.files = data;
-      console.log('files: ', this.files);
+      //console.log('files: ', this.files);
     });
 
     this.socketService.onNotification().subscribe((notification) => {
@@ -58,18 +53,18 @@ export class BucketComponent implements OnInit {
   }
 
   showNotification(message: string): void {
-    alert(message); // Display a browser alert
+    alert(message); 
   }
 
   sendMessage(): void {
     if (this.message.trim()) {
       this.socketService.sendMessage(this.message);
-      this.message = ''; // Clear message input after sending
+      this.message = ''; 
     }
   }
 
   onChatContainerClick(event: MouseEvent): void {
-    event.stopPropagation(); // Prevent the click event from propagating to the document
+    event.stopPropagation(); 
   }
 
   // Close the chat window if clicked outside
@@ -190,10 +185,11 @@ export class BucketComponent implements OnInit {
     this.fileService.uploadFile(file).subscribe({
       next: (response: any) => {
         console.log('File uploaded successfully:', response.fileURL);
-        this.files = [
-          ...this.files,
-          { name: file.name, url: response.fileURL },
-        ];
+
+        this.fileService.getFiles().subscribe((data) => {
+          this.files = data;
+          //console.log('files: ', this.files);
+        });
         // this.fileService.add(response.fileURL);
         alert('file uploaded successfully!');
         this.isUploadModalOpen = false; // Close the modal
@@ -213,12 +209,12 @@ export class BucketComponent implements OnInit {
 
   getFileType(url: string): string {
     const extension = url.split('.').pop()?.toLowerCase(); // Extract the file extension
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension!)) {
+    if (['jpg', 'jpeg', 'png'].includes(extension!)) {
       return 'image';
-    } else if (['mp4', 'webm', 'ogg'].includes(extension!)) {
+    } else if (['mp4'].includes(extension!)) {
       return 'video';
     } else if (extension === 'pdf') {
-      return 'pdf'; // Add support for PDF files
+      return 'pdf'; 
     } else if (extension === 'xlsx') {
       this.xlsxUrl = this.getOfficeViewerURL(url);
       return 'xlsx';
@@ -226,6 +222,43 @@ export class BucketComponent implements OnInit {
       return 'other'; // For any unsupported file types
     }
   }
+
+  getFormattedFileSize(size: number): string {
+    if (size < 1024) {
+      return `${size} Bytes`; 
+    } else if (size < 1048576) {
+      return `${(size / 1024).toFixed(2)} KB`; 
+    } else if (size < 1073741824) {
+      return `${(size / 1048576).toFixed(2)} MB`; 
+    } else {
+      return `${(size / 1073741824).toFixed(2)} GB`; 
+    }
+  }
+
+  getFileIcon(file: any): string {
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+    switch (fileExtension) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return 'bi bi-file-earmark-image';
+      case 'pdf':
+        return 'bi bi-file-earmark-pdf';
+      case 'doc':
+      case 'docx':
+        return 'bi bi-file-earmark-word';
+      case 'xls':
+      case 'xlsx':
+        return 'bi bi-file-earmark-excel';
+      case 'txt':
+        return 'bi bi-file-earmark-text';
+      default:
+        return 'bi bi-file-earmark';
+    }
+  }
+
   getOfficeViewerURL(url: string): SafeUrl {
     const viewerURL = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
       url

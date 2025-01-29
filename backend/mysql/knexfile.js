@@ -1,8 +1,7 @@
-// Load environment variables from the .env file
 require("dotenv").config();
 
 module.exports = {
-  client: "mysql2", // MySQL client from environment
+  client: "mysql2", 
   connection: {
     host: "localhost",
     user: "root",
@@ -10,7 +9,7 @@ module.exports = {
     database: "inventory",
   },
   migrations: {
-    directory: "./migrations", // Migration folder path
+    directory: "./migrations", 
   },
   seeds: {
     directory: "./seeds",
