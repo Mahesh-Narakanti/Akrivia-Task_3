@@ -8,7 +8,8 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const inventory = require("./routes/inventory");
 // const fileRoute = require("./routes/files");
 // const cartRoute = require("./routes/cart");
- //const productRoute = require("./routes/product");
+//const productRoute = require("./routes/product");
+const importFile = require("./routes/import");
 const validateToken = require("./middilewares/tokenValidation-middileware");
 const userRoute = require("./v1/authorization/userRoute");
 const cartRoute = require("./v1/cart/cartRoutes");
@@ -18,6 +19,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const socketHandler = require("./socket/socketHandler");
 const errorHandler = require("./middilewares/errorhandler-middileware");
+const startCronJob=require("./routes/cronJob")
 
 const app = express();
 app.use(
@@ -45,6 +47,7 @@ app.use("/auth", userRoute);
 app.use("/upload",validateToken, uploadRoutes);
 app.use("/inventory", validateToken, inventory);
 app.use("/inventories", validateToken, inventories);
+app.use("/file", validateToken,importFile);
 app.use("/files",validateToken, fileRoute);
 app.use("/product",validateToken, inventories);
 app.use("/cart",validateToken, cartRoute);
@@ -55,6 +58,7 @@ app.get("/api/protected-data", validateToken, (req, res) => {
 
 
 socketHandler(io);
+startCronJob(io);
 
 app.use(errorHandler);
 

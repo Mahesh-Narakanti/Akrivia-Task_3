@@ -1,19 +1,43 @@
-<!-- Modal for File Upload -->
-<div class="modal" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" *ngIf="openFileModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="fileUploadModalLabel">Upload Profile Picture</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    (click)="closeModal()"></button>            </div>
-            <div class="modal-body">
-                <div class="border p-3 text-center">
-                    <input type="file" id="fileInput" class="form-control mb-3" (change)="onFileSelected($event)"
-                        accept="image/*">
-                    <p class="text-muted">Or drag and drop a file here</p>
-                    <button class="btn btn-success" (click)="uploadFile()">Upload</button>
-                </div>
-            </div>
-        </div>
+<!-- Modal for File Details -->
+<div class="modal" id="fileModal"  tabindex="-1"   (click)="closeModal($event)">
+    <div class="modal-content" (click)="stopPropagation($event)">
+        <h4>File Details</h4>
+
+        <!-- Table displaying file details -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Total Products</th>
+                    <th>Accepted Products</th>
+                    <th>Rejected Products</th>
+                    <th>Status</th>
+                    <th>Reject URL</th>
+                    <th>Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let file of filesData">
+                    <td>{{ file.filename }}</td>
+                    <td>{{ file.totalProducts }}</td>
+                    <td>{{ file.acceptedProducts }}</td>
+                    <td>{{ file.rejectedProducts }}</td>
+                    <td>{{ file.status }}</td>
+                    <td><a [href]="file.rejectUrl" target="_blank">View Reject URL</a></td>
+                    <td><button (click)="openPreview(file.previewUrl)">Preview</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class="close-btn" (click)="closeModal()">Close</button>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="preview-modal" [ngClass]="{ 'show': previewOpen }" (click)="closePreview()">
+    <div class="preview-modal-content" (click)="stopPropagation($event)">
+        <h4>Preview File</h4>
+        <iframe *ngIf="previewUrl" [src]="previewUrl" width="100%" height="400px"></iframe>
+        <button class="close-btn" (click)="closePreview()">Close Preview</button>
     </div>
 </div>

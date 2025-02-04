@@ -1,10 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Sanitizer } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { debounceTime, map, of, Subject, switchMap } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import * as XLSX from 'xlsx'; // Import the xlsx library
 import { jsPDF } from 'jspdf';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-inventory',
@@ -12,6 +13,7 @@ import { jsPDF } from 'jspdf';
   styleUrls: ['./inventory.component.css'],
 })
 export class InventoryComponent implements OnInit {
+  importFile: File | null = null;
   products: any[] = [];
   vendors: any[] = [];
   categories: any[] = [];
@@ -34,22 +36,30 @@ export class InventoryComponent implements OnInit {
   class1 = 'btn btn-light  active border border-secondary btn-sm';
   class2 = 'btn btn-light   border border-secondary btn-sm';
   private searchSubject: Subject<void> = new Subject<void>();
+  uploadInProgress = false;
+  openHistory = false;
+  filesData: any[] = [];
+  xlsxUrl: SafeUrl | null = null;
+  isPreviewOpen = false;
 
   constructor(
     private productService: ProductService,
     private fb: FormBuilder,
-    private auth: AuthService
+    private auth: AuthService,
+    private sanitizer:DomSanitizer
   ) {
-    this.searchSubject.pipe(
-      debounceTime(777),
-      switchMap(() => {
-        return of(this.loadProducts());
-      })
-    ).subscribe();
+    this.searchSubject
+      .pipe(
+        debounceTime(777),
+        switchMap(() => {
+          return of(this.loadProducts());
+        })
+      )
+      .subscribe();
   }
 
   ngOnInit(): void {
-    this.loadProducts();
+   this.loadProducts();
 
     this.productService.getVendors().subscribe({
       next: (data) => {
@@ -245,6 +255,19 @@ export class InventoryComponent implements OnInit {
     this.isAddProductModalOpen = false; // Close modal
   }
 
+  showImportHistory(): void{
+    this.toggleView = 'history';
+    this.productService.getFiles().subscribe({
+      next: (response) => {
+        console.log(response);
+        this.filesData = response;
+      },
+      error: (err) => {
+        alert('error fetching files');
+      },
+    });
+  }
+
   openImportModal(): void {
     this.isImportModalOpen = true;
   }
@@ -259,13 +282,16 @@ export class InventoryComponent implements OnInit {
     event.preventDefault();
     const file = event.dataTransfer?.files[0];
     if (file) {
-      this.parseData(file);
+      //this.parseData(file);
+      this.importFile = file;
+
       (document.getElementById('fileInput') as HTMLInputElement).files =
         event.dataTransfer.files;
     }
   }
 
   parseData(file: File) {
+    this.uploadInProgress = true;
     if (file && file.name.endsWith('.xlsx')) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
@@ -310,20 +336,26 @@ export class InventoryComponent implements OnInit {
   }
   onFileChange(event: any): void {
     const file = event.target.files[0];
-    this.parseData(file);
+    // this.parseData(file);
+    this.importFile = file;
   }
 
-  uploadData(): void {
-    if (this.parsedProducts.length > 0) {
-      this.productService.addProducts(this.parsedProducts).subscribe({
+   uploadData(): void {
+    if (this.importFile) {
+      alert('File uploaded. The background process has started.');
+      this.isImportModalOpen = false;
+      const fileName = this.importFile.name;
+      this.productService.addProducts(this.importFile,fileName).subscribe({
         next: (response) => {
-          this.isImportModalOpen = false;
+          console.log(fileName);
+         // this.productService.addFiles(fileName);
+          this.uploadInProgress = false;
           this.errorMessage = null;
-          alert('products imported sucessfully');
         },
         error: (err) => {
           this.errorMessage = 'Failed to upload products. Please try again.';
           console.error('Error uploading products', err);
+          this.uploadInProgress = false;
         },
       });
     }
@@ -606,4 +638,20 @@ export class InventoryComponent implements OnInit {
         },
       });
   }
+
+
+  
+  showPreview(url: string): void {
+    console.log(url);
+      const viewerURL = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+        url
+      )}`;
+      this.xlsxUrl = this.sanitizer.bypassSecurityTrustResourceUrl(viewerURL);  
+      this.isPreviewOpen = true;
+    }
+  
+    closePreview(): void {
+      this.isPreviewOpen = false;
+    }
+  
 }

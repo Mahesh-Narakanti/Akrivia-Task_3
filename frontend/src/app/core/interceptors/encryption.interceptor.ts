@@ -14,6 +14,7 @@ import * as CryptoJS from 'crypto-js';
 export class EncryptionInterceptor implements HttpInterceptor {
   private secretKey = 'your-secret-key'; // Ensure to securely manage this key
   private excludedRoutes: string[] = [
+  
     'http://localhost:3000/files',
     'http://localhost:3000/upload',
   ];
@@ -22,7 +23,10 @@ export class EncryptionInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    if (this.shouldSkipEncryption(req.url)) {
+    if (
+      this.shouldSkipEncryption(req.url) ||
+      req.url.includes('amazonaws.com')
+    ) {
       return next.handle(req);
     }
 

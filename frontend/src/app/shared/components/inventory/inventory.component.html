@@ -15,6 +15,12 @@
                 <button class="btn btn-light border btn-sm me-2" (click)="openImportModal()">
                     <i class="bi bi-upload"></i> Import
                 </button>
+
+                <!-- History Button -->
+                <button class="btn btn-secondary btn-sm" (click)="showImportHistory()">
+                    <i class="bi bi-clock-history"></i> History
+                </button>
+
                 <button class="btn btn-violet btn-sm" (click)="openAddProductModal()">
                     <i class="bi bi-plus-circle"></i> Add Product
                 </button>
@@ -203,6 +209,31 @@
                     </td>
                 </tr>
             </tbody>
+
+
+            <thead *ngIf="toggleView === 'history'">
+                <tr>
+                    <th>Filename</th>
+                    <th>Total Products</th>
+                    <th>Accepted Products</th>
+                    <th>Rejected Products</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody *ngIf="toggleView === 'history'">
+                <tr *ngFor="let file of filesData">
+                    <td>{{ file.file_name }}</td>
+                    <td>{{ file.total_rows }}</td>
+                    <td>{{ file.products_added }}</td>
+                    <td>{{ file.rejected_rows }}</td>
+                    <td><span class="badge" [ngStyle]="{ color: (file.status==='Completed')?'green':((file.status=='Processing')?'orange':'blue')  }">{{ file.status }}</span></td>
+                    <ng-container *ngIf="file.rejected_rows>0">
+                    <td  style="cursor: pointer;"><a [href]="file.rejected_file_s3_url" ><i class="bi bi-download"></i></a>
+                    <p (click)="showPreview(file.rejected_file_s3_url)">Preview</p></td>
+                </ng-container>
+                </tr>
+            </tbody>
         </table>
 
 
@@ -222,7 +253,10 @@
                     </button>
                 </ng-container>
             </div>
-        
+            <div class="text-center mt-2">
+                <!-- Display total number of pages -->
+                <span *ngIf="totalPages">Total Pages: {{ totalPages }}</span>
+            </div>
             <!-- Next Button on the Right -->
             <button class="btn btn-outline-secondary btn-sm" (click)="goToPage(currentPage + 1)"
                 [disabled]="currentPage === totalPages">
@@ -232,6 +266,7 @@
 
     </div>
 </div>
+
 
 
 <!-- modals -->
@@ -325,6 +360,26 @@
                     <input type="file" id="fileInput" class="filein form-control mb-3" (change)="onFileChange($event)">
                     <button class="btn btn-success" (click)="uploadData()">Upload</button>
                 </div>
+                <div *ngIf="uploadInProgress">
+                    <p>File is being processed in the background. You will be notified when done.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- xlsx Preview Modal -->
+<div *ngIf="isPreviewOpen" class="modal" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Preview</h5>
+                <button type="button" class="btn-close" aria-label="Close" (click)="closePreview()"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Conditionally render preview based on file type -->
+                    <iframe [src]="xlsxUrl" width="100%" height="600px"></iframe>
+
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@ export class HeaderInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     const token = sessionStorage.getItem('token');
-    if (token) {
+    if (token && !request.url.includes('amazonaws.com')) {
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`,

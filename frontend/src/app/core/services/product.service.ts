@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, ObservedValueOf, switchMap } from 'rxjs';
 import { ProductListResponse } from '../interfaces/products';
 
 @Injectable({
@@ -71,7 +71,7 @@ export class ProductService {
   }
 
   addProduct(newProduct: any): Observable<any> {
-    return  this.http.post(`${this.apiUrl}/product/addNew`, newProduct);
+    return this.http.post(`${this.apiUrl}/product/addNew`, newProduct);
   }
 
   delete(productId: any): Observable<any> {
@@ -80,10 +80,29 @@ export class ProductService {
     });
   }
 
-  addProducts(products: any[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/upload/import`, {
-      productsData: products,
-    });
+  addProducts(file:File,fileName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/file/import`, fileName).pipe(
+      switchMap((response: any) => {
+        const presignedUrl = response.presignedUrl; // Extract presigned URL from response
+       return this.uploadFileToS3(presignedUrl, file);
+        
+      })
+    );
+  }
+  uploadFileToS3(presignedUrl: string, file: File): Observable<any> {
+const headers = new HttpHeaders({
+  'Content-Type': file.type, // Set content type to the file's type
+});
+    return this.http.put(presignedUrl, file,{headers});
+  }
+
+  addFiles(fileName: string | null): Observable<any>{
+    console.log("came");
+    return this.http.post(`${this.apiUrl}/file/add-file`,fileName);
+  }
+
+  getFiles(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/file/getFiles`);
   }
 
   updateProduct(updatedProduct: any): Observable<any> {

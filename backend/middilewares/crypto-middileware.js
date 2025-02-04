@@ -2,7 +2,7 @@ const crypto = require("crypto-js");
 
 const secretKey = "your-secret-key"; 
 
-const excludedRoutes = ["/"]; // List of routes to exclude from encryption;
+const excludedRoutes = ["/",]; // List of routes to exclude from encryption;
 
 function encrypt(text) {
     return crypto.AES.encrypt(JSON.stringify(text), secretKey).toString();
@@ -16,6 +16,7 @@ function decrypt(text) {
 
 function decryptRequest(req, res, next) {
   if (shouldSkipEncryption(req)) {
+    //console.log("encrypt: "+req.url);
     return next();
   }
 
@@ -32,7 +33,10 @@ function decryptRequest(req, res, next) {
 }
 
 function shouldSkipEncryption(req) {
-  return excludedRoutes.includes(req.url);
+  //  console.log(req.url);
+  if (req.url.includes("amazonaws.com"))
+    return true;
+    return excludedRoutes.includes(req.url);
 }
 
 

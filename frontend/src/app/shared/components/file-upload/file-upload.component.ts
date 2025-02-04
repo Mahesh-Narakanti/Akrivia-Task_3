@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { ProductService } from 'src/app/core/services/product.service';
 
 
 
@@ -9,49 +11,49 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./file-upload.component.css'],
 })
 export class FileUploadComponent {
-  selectedFile: File | null = null;
-  @Input() openFileModal: boolean = true; // Control modal visibility via parent
-  @Output() fileget = new EventEmitter<File>();
-  @Output() closeFileModal = new EventEmitter<void>();
-  // Handle file selection
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
+  modalOpen: boolean = false; // Controls modal visibility
+  previewOpen: boolean = false; // Controls preview modal visibility
+  previewUrl: SafeUrl | null = null; // The URL of the file to be previewed
+  filesData :any[]= [];
+
+  constructor(private sanitizer: DomSanitizer,private productService:ProductService) {}
+
+  // Open the modal
+  openModal() {
+    this.modalOpen = true;
+    this.productService.getFiles().subscribe({
+      next: (response) => {
+        console.log(response);
+        this.filesData = response;
+      },
+      error: (err) => {
+        alert("error fetching files");
+      }
+        })
   }
 
-  // Handle drag over event (for drag-and-drop)
-  onDragOver(event: DragEvent) {
-    event.preventDefault(); // Prevent default behavior to allow dropping
-  }
-
-  // Handle drag leave event
-  onDragLeave() {
-    // Optional: Reset border or show effects on drag leave
-  }
-
-  // Handle drop event for drag-and-drop
-  onDrop(event: DragEvent) {
-    event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (file) {
-      this.selectedFile = file;
-      (document.getElementById('fileInput') as HTMLInputElement).files =
-        event.dataTransfer.files;
+  // Close the modal
+  closeModal(event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
     }
+    this.modalOpen = false;
   }
 
-  // Handle file upload
-  uploadFile() {
-    if (this.selectedFile) {
-      console.log('Uploading file:', this.selectedFile);
-      this.fileget.emit(this.selectedFile);
-      // Example: send the file to the server using Angular's HttpClient
-    } else {
-      alert('Please select a file to upload.');
-    }
+  // Open the preview modal with the file URL
+  openPreview(url: string) {
+    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.previewOpen = true;
   }
 
-  closeModal() {
-    this.openFileModal = false;
-    this.closeFileModal.emit
+  // Close the preview modal
+  closePreview() {
+    this.previewUrl = null;
+    this.previewOpen = false;
+  }
+
+  // Stop propagation of click events to avoid closing modals when clicking inside
+  stopPropagation(event: MouseEvent) {
+    event.stopPropagation();
   }
 }
