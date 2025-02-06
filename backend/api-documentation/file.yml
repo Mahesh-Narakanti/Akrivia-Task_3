@@ -1,0 +1,99 @@
+tags:
+  - name: "File Management"
+    description: "Manage file uploads and listing of files."
+
+paths:
+  /files/:
+    post:
+      tags:
+        - "File Management"
+      summary: "Upload a file"
+      description: "This endpoint allows users to upload a file to the server."
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          description: "User token required to authenticate the request"
+          required: true
+          type: "string"
+          example: "Bearer <your_token_here>"
+        - name: "file"
+          in: "formData"
+          description: "File to upload"
+          required: true
+          type: "file"
+          format: "binary"
+      responses:
+        200:
+          description: "File uploaded successfully"
+          schema:
+            type: "object"
+            properties:
+              fileURL:
+                type: "string"
+                example: "https://s3.amazonaws.com/bucket/file-name"
+        403:
+          description: "Token Required"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Token Required"
+        500:
+          description: "Error uploading file"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Error uploading file"
+
+  /files/list-files:
+    get:
+      tags:
+        - "File Management"
+      summary: "List files"
+      description: "This endpoint lists all files in the specified branch."
+      parameters:
+        - name: "branch"
+          in: "query"
+          description: "Branch name to filter files by"
+          required: true
+          type: "string"
+          example: "electronics"
+      responses:
+        200:
+          description: "List of files in the specified branch"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  description: "The name of the file"
+                  example: "product_image.jpg"
+                url:
+                  type: "string"
+                  description: "The URL where the file is accessible"
+                  example: "https://akv-interns.s3.ap-south-1.amazonaws.com/branch/product_image.jpg"
+                size:
+                  type: "number"
+                  description: "Size of the file in bytes"
+                  example: 123456
+        400:
+          description: "Bad Request"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Branch query parameter is required"
+        500:
+          description: "Error retrieving files"
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Error retrieving files"

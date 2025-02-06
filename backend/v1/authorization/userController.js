@@ -11,6 +11,8 @@ module.exports = {
       lastName: Joi.string().min(1).max(30).required(),
       email: Joi.string().email().required(),
       password: Joi.string().min(6).required(),
+      branch: Joi.string().required(),
+      role: Joi.string().required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -18,9 +20,9 @@ module.exports = {
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password,branch,role } = req.body;
     try {
-      await userService.createUser(firstName, lastName, email, password);
+      await userService.createUser(firstName, lastName, email, password,branch,role);
       res.status(200).json({ message: "User registered successfully" });
     } catch (err) {
       logger.error(err);
@@ -95,6 +97,29 @@ module.exports = {
       });
     } catch (err) {
       next(err);
+    }
+  },
+
+  getUsers: async (req, res, next) => {
+    try {
+            const { branch } = req.query;
+      const user = await userService.getUsers(branch);
+      res.status(200).json(user);
+    } catch (err) {
+      logger.error(err);
+      res.status(500).send("Internal Server Error");
+    }
+  },
+
+  editUser: async (req, res, next) => {
+    try {
+      const { user_id, role_id } = req.body;
+      console.log(role_id);
+      const user = await userService.editUser(user_id,role_id);
+      res.status(200).json(user);
+    } catch (err) {
+      logger.error(err);
+      res.status(500).send("Internal Server Error");
     }
   },
 };

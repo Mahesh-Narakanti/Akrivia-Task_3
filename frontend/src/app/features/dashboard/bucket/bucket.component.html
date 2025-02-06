@@ -2,11 +2,15 @@
     <div class="card-header bg-white mt-2">
         <h5 class="mb-2">Files Uploaded</h5>
         <div class="d-flex gap-2 mt-3 mb-3">
+            <ng-container *ngIf="userRole!='user'">
             <button class="btn btn-light border btn-sm me-2" (click)="downloadAll()">Download all</button>
+            </ng-container>
+            <ng-container *ngIf="userRole=='admin'">
             <button class="btn btn-violet btn-sm" (click)=" uploadFiles()">
                 <i class="bi bi-upload"></i>
                 Upload
             </button>
+            </ng-container>
         </div>
     </div>
 
@@ -17,20 +21,30 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" /></th>
+                            <ng-container *ngIf="userRole!='user'">
+                            <th></th>
+                            </ng-container>
                             <th>File Name</th>
                         </tr>
                     </thead>
                     <tbody>
 
                         <tr *cdkVirtualFor="let file of files">
+                            <ng-container *ngIf="userRole!='user'">
                             <td><input type="checkbox" (change)="toggleProductSelection($event, file)" /></td>
+                            </ng-container>
                             <td (click)="showPreview(file.url)" style="cursor: pointer;">
                                 <i [class]="getFileIcon(file)"></i>
                                 {{ file.name }}
                                 <p class="text-end" style="font-size: 0.8rem; color: #6c757d;">{{ getFormattedFileSize(file.size) }}</p>
                             </td>
-
+                             <ng-container *ngIf="userRole!='user'">
+                                <td>
+                                <button class="btn btn-light btn-sm me-1" (click)="downloadSingleFile(file.url,file.name)">
+                                    <i class="bi bi-download"></i>
+                                </button>
+                                </td>
+                             </ng-container>
                             <!-- <td class="text-end" style="font-size: 0.8rem; color: #6c757d;">
                               {{ getFormattedFileSize(file.size) }}
                             </td> -->
@@ -43,36 +57,63 @@
     </div>
 </div>
 
-<div class="chat-container" (click)="onChatContainerClick($event)">
+<div class="chat-container font" (click)="onChatContainerClick($event)">
     <!-- Floating Chat Button -->
-    <button class="floating-btn" (click)="toggleChatWindow()">
-        💬
-    </button>
+    <button class="floating-btn" (click)="toggleChatWindow()">💬</button>
 
     <!-- Chat Window -->
     <div class="chat-window" *ngIf="isChatOpen">
         <div class="header">
-            <h2>Chat</h2>
-            <button class="close-btn" (click)="toggleChatWindow()">X</button>
+            <button *ngIf="backButtonVisible" (click)="goBack()" class="back-btn">←</button>
+            <h2 class="font">{{ chatName || 'Chat' }}</h2>
+            <button class="create-room-btn" (click)="createRoom()">Create Room</button>
+            <button class="join-room-btn" (click)="openJoinRoomModal()">Join Room</button>
+        </div>
+
+        <!-- Users and Status (Left Side) -->
+        <div *ngIf="!recipientId && !currentRoom" class="user-list">
+            <h3 class="font">Users Online</h3>
+            <ul class="font">
+                <li *ngFor="let user of onlineUsers" (click)="selectUserForPrivateChat(user)">
+                    <ng-container *ngIf="user.username!=curUser">
+                    <span [ngStyle]="{'color': user.color}">{{ user.username }}</span>
+        <span class="online">{{user.notification}}</span> <!-- Display unread message count -->
+        </ng-container>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Available Rooms (Right Side) -->
+        <div  class="rooms-list" *ngIf="showRoomList && !recipientId && !currentRoom">
+            <h3 class="font">Rooms</h3>
+            <ul class="font">
+                <li *ngFor="let room of roomNames" (click)="joinRoom(room)">
+                    <span>{{ room }}</span>
+                </li>
+            </ul>
         </div>
 
         <!-- Messages Container -->
-        <div class="messages-container">
-            <div *ngFor="let message of messages" class="message-box" [ngStyle]="{'border-color': message.color}">
+        <div  class="messages-container">
+            <!-- Group Chat or Private Chat Messages -->
+            <div *ngFor="let message of messagesByRoom[currentRoom || recipientId || 0 ]" class="message-box"
+                [ngStyle]="{'border-color': message.color}">
                 <div class="message-content">
                     <span class="username" [ngStyle]="{'color': message.color}">{{ message.username }}:</span>
-                    <p>{{ message.msg }}</p>
+                    <p class="font">{{ message.msg }}</p>
                 </div>
             </div>
         </div>
 
+
         <!-- Message Input -->
-        <div class="input-container">
+        <div  class="input-container">
             <input [(ngModel)]="message" placeholder="Type a message..." />
             <button class="btn-violet" (click)="sendMessage()">Send</button>
         </div>
     </div>
 </div>
+
 
 
 

@@ -85,4 +85,23 @@ async function generatePresignedUrl(fileName, userId) {
   }
 }
 
-module.exports = { uploadToS3 ,getFileFromS3 , downloadFileFromS3,generatePresignedUrl};
+async function uploadToAdminS3(fileBuffer, key, contentType) {
+  const params = {
+    Bucket: "akv-interns",
+    Key: `Mahesh@AKV7082/${key}`,
+    Body: fileBuffer,
+    ContentType: contentType,
+  };
+
+  try {
+    //  logger.info("Uploading to S3 with params:", params);
+    const data = await s3.upload(params).promise();
+    // logger.info("Upload success:", data);
+    return data.Location;
+  } catch (error) {
+    logger.error("Error uploading to S3:", error);
+    throw new Error("Error uploading file to S3");
+  }
+}
+
+module.exports = { uploadToS3 ,getFileFromS3 , downloadFileFromS3,generatePresignedUrl,uploadToAdminS3};

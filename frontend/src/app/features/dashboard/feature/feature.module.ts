@@ -11,6 +11,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { UserEditComponent } from '../user-edit/user-edit.component';
 
 
 @NgModule({
@@ -19,7 +20,8 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
         InventoryComponent,
         BucketComponent,
         FileUploadComponent,
-        AddProductComponent,
+    AddProductComponent,
+        UserEditComponent
   ],
   imports: [
     CommonModule,

@@ -50,6 +50,7 @@ module.exports = {
       unit_price,
       product_image,
       full_image,
+      branchId
     } = req.body;
     try {
       const newProduct = await productService.addNewProduct({
@@ -61,6 +62,7 @@ module.exports = {
         unit_price,
         product_image,
         full_image,
+        branchId
       });
 
       if (newProduct) {

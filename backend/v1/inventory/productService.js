@@ -45,12 +45,19 @@ module.exports = {
     unit_price,
     product_image,
     full_image,
+    branchId
   }) => {
     let curstatus = "active";
     if (status === 0) {
       curstatus = "default";
     }
-    const isThere = await knex("products").where("product_name", product_name).andWhereNot("status","deleted").first();
+
+    console.log(branchId);
+const isThere = await knex("products")
+  .where("product_name", product_name)
+  .andWhereNot("status", "deleted") 
+  .andWhere("branch_id", branchId)
+  .first();
     if (!isThere) {
       const [newProduct] = await knex("products").insert({
         product_name,
@@ -60,16 +67,14 @@ module.exports = {
         unit_price,
         product_image,
         full_image,
+        branch_id:branchId
       });
 
-      const [productId] = await knex.raw(
-        "SELECT product_id FROM products WHERE product_name = ? ORDER BY product_id DESC LIMIT 1",
-        [product_name]
-      );
-
+      const productId = await knex("products").select("product_id").where("product_name",product_name).andWhere("branch_id",branchId).first();
+      console.log("product id: " + productId.product_id);
       if (vendors && vendors.length > 0) {
         const vendorAssociations = vendors.map((vendorId) => ({
-          product_id: productId[0].product_id,
+          product_id: productId.product_id,
           vendor_id: vendorId,
         }));
 

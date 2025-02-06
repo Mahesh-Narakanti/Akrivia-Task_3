@@ -16,13 +16,15 @@ export class ProductService {
     page: number,
     limit: number,
     searchQuery: string,
-    filterColumns: string[]
+    filterColumns: string[],
+    branchId?:string 
   ): Observable<any> {
+    console.log(branchId);
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
-      .set('search', searchQuery);
-
+      .set('search', searchQuery)
+      .set('branchId', branchId!);
     if (filterColumns.length > 0) {
       params = params.set('filterColumns', filterColumns.join(','));
     }
@@ -80,8 +82,8 @@ export class ProductService {
     });
   }
 
-  addProducts(file:File,fileName: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/file/import`, fileName).pipe(
+  addProducts(file:File,fileName: string,branch:string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/file/import`, { fileName, branch }).pipe(
       switchMap((response: any) => {
         const presignedUrl = response.presignedUrl; // Extract presigned URL from response
        return this.uploadFileToS3(presignedUrl, file);

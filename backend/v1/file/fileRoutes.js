@@ -1,6 +1,7 @@
 const express = require("express");
 const fileController = require("./fileController");
 const router = express.Router();
+const validateToken=require("../../middilewares/tokenValidation-middileware")
 
 // Routes for file operations
 router.post("/", fileController.uploadFile);

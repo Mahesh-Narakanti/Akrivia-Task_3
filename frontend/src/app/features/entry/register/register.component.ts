@@ -10,6 +10,20 @@ import { AuthService } from 'src/app/core/services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup | any;
+  branches = [
+    { id: 1, branch_name: 'India', branch_location: 'India Office, New Delhi' },
+    {
+      id: 2,
+      branch_name: 'England',
+      branch_location: 'England Office, London',
+    },
+    {
+      id: 3,
+      branch_name: 'Australia',
+      branch_location: 'Australia Office, Sydney',
+    },
+  ];
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -22,16 +36,21 @@ export class RegisterComponent implements OnInit {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
+      branch: ['', Validators.required],
+      role:['',Validators.required]
     });
   }
 
   onSubmit(): void {
+    console.log(this.registerForm);
     this.authService
       .signUp(
         this.registerForm.value.firstName,
         this.registerForm.value.lastName,
         this.registerForm.value.email,
-        this.registerForm.value.password
+        this.registerForm.value.password,
+        this.registerForm.value.branch,
+        this.registerForm.value.role
       )
       .subscribe({
         next: (response) => {

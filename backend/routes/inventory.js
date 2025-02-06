@@ -6,13 +6,15 @@ const router = express.Router();
 
 
 router.get("/products", async (req, res) => {
+  console.log("getting products");
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const searchQuery = req.query.search || "";
   const selectedColumns = req.query.filterColumns
     ? req.query.filterColumns.split(",")
     : null;
-
+  const branch_id = req.query.branchId;
+  console.log(branch_id);
   // Default columns if none are selected
   const defaultFilterColumns = [
     "product_name",
@@ -46,7 +48,8 @@ router.get("/products", async (req, res) => {
         "vendors.vendor_id"
       )
       .select("products.*", "categories.category_name", "vendors.vendor_name")
-      .whereNot("products.status", "deleted");
+      .whereNot("products.status", "deleted")
+      .andWhere("products.branch_id", branch_id);
     
     // Step 2: Search based on selected filter columns
     if (searchQuery) {

@@ -15,9 +15,9 @@ declare global {
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
-  userData: { id?: string; profile_pic?: string; username?: string,email?:string } = {};
+  userData: { id?: string; profile_pic?: string; username?: string,email?:string ,branch?:string ,role?:string,branchId?:string} = {};
   selectedFile: File | null = null;
-  
+  editUser = false;
 
   constructor(private auth: AuthService , private router:Router) {
     this.auth.getUser().subscribe({
@@ -26,7 +26,11 @@ export class DashboardComponent implements OnInit {
         this.userData.profile_pic = response.thumbnail;
         this.userData.username = response.username;
         this.userData.email = response.email;
-        console.log("here: "+response.thumbnail);
+        this.userData.branch = response.branch;
+        this.userData.role = response.role;
+        this.userData.branchId = response.branch_id;
+        console.log("in dashboard " + response.branch_id);
+      //  console.log("here: "+response.thumbnail);
       },
     });
   }
@@ -84,6 +88,14 @@ export class DashboardComponent implements OnInit {
         console.log(response.thumbnailUrl);
         this.auth.profileImage(response.thumbnailUrl, response.profilePicUrl);
         alert('Profile picture updated successfully!');
+        
+        const closeButton = document.querySelector('.btn-close');
+
+        if (closeButton instanceof HTMLButtonElement) {
+          // Trigger the click event programmatically
+          closeButton.click();
+        }
+
       },
       error: () => {
         alert('Error updating profile picture');
@@ -94,5 +106,13 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     sessionStorage.removeItem('token');
     this.router.navigate(['/login']);
+  }
+
+  editUsers(): void{
+    this.editUser=true;
+  }
+
+  closeEdit(): void{
+    this.editUser = false;
   }
 }

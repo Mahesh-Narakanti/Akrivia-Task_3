@@ -23,6 +23,11 @@
                     style="background-color: #6a0dad; color: white; border: none; padding: 10px 20px; width: 100%; border-radius: 7px;">Sign
                     In</button>
 
+                <div class="forgot-password mt-3 text-center">
+                    <a href="javascript:void(0)" (click)="openForgotPasswordModal()"
+                        style="color: #6a0dad; text-decoration: underline;">Forgot your password?</a>
+                </div>
+
                 <p class="text-center mt-4">
                     Don't have an account?<a routerLink="/register" class="" style="color: #6a0dad;"> Sign
                         Up</a>
@@ -36,4 +41,30 @@
         style="max-width: 100%; max-height: 100%;" />
 </div>
 
+</div>
+
+
+<!-- Forgot Password Modal -->
+<div *ngIf="showForgotPasswordModal" class="forgot-password-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4>Reset Password</h4>
+            <button type="button" (click)="closeForgotPasswordModal()">X</button>
+        </div>
+        <div class="modal-body">
+            <label for="email">Enter your email</label>
+            <input type="email" class="form-control shadow-sm" [(ngModel)]="forgotPasswordEmail"
+                placeholder="Enter your email" />
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn" (click)="sendResetLink()"
+                style="background-color: #6a0dad; color: white; padding: 10px 20px; border-radius: 7px;">
+                Send Reset Link
+            </button>
+            <button type="button" class="btn" (click)="closeForgotPasswordModal()"
+                style="background-color: #ccc; color: black; padding: 10px 20px; border-radius: 7px;">
+                Cancel
+            </button>
+        </div>
+    </div>
 </div>

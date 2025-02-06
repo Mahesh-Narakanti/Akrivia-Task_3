@@ -9,7 +9,10 @@ module.exports = {
   verifyTokenAndGetUserId: async (token) => {
     try {
       const decoded = jwt.verify(token, "godisgreat");
-      return decoded.id;
+      return {
+        user_id: decoded.id,
+        role: decoded.role
+      };
     } catch (error) {
       throw new Error("Invalid token");
     }
@@ -18,6 +21,8 @@ module.exports = {
   // Add items to cart and update stock in products table
   addItemsToCart: async (user_id, itemsToSend) => {
     // Start a transaction
+
+    //console.log(user_id);
     const trx = await knex.transaction();
 
     try {
@@ -83,19 +88,21 @@ module.exports = {
   },
 
   // Get cart items from database
-  getCartItems: async (user_id) => {
-    const products = await knex("products")
-      .select("product_name")
-      .where("status", "deleted");
+  getCartItems: async (user_id, role) => {
+      const products = await knex("products")
+        .select("product_name")
+        .where("status", "deleted");
     // console.log(products);
     const productNames =  products.map((product) => product.product_name);
 
-   // console.log(productNames);
-    return knex("cart")
-      .select("*")
-      .where("id", user_id)
-      .andWhereNot("status", "99")
-      .whereNotIn("product_name", productNames);
+    // console.log(productNames);
+    console.log("in cart "+ role);
+
+      return knex("cart")
+        .select("*")
+        .where("id", user_id)
+        .andWhereNot("status", "99")
+        .whereNotIn("product_name", productNames);
   },
 
   deleteItem: async (cart_id) => {

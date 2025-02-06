@@ -13,6 +13,7 @@ import { HeaderInterceptor } from './core/interceptors/header-interceptor';
 // import { TokenInterceptor } from './core/interceptors/token-interceptor';
 // import { AddProductComponent } from './shared/components/add-product/add-product.component';
 import { EncryptionInterceptor } from './core/interceptors/encryption.interceptor';
+import { ForgotPasswordComponent } from './features/entry/forgot-password/forgot-password.component';
 // import { AuthModule } from './features/entry/auth/auth.module';
 // import { FeatureModule } from './features/dashboard/feature/feature.module';
 

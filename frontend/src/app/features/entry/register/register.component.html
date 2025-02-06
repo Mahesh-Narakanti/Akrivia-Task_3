@@ -22,6 +22,27 @@
                     <input type="email"  class="form-control shadow-sm" formControlName="email"
                         placeholder="Enter your email or username" required />
                 </div>
+                
+                 <div class="form-group mb-2">
+                    <label for="branch" class="mt-3">select Branch</label>
+                    <select class="form-control shadow-sm" formControlName="branch" required>
+                        <option value="" disabled selected>Select your branch</option>
+                        <option *ngFor="let branch of branches" [value]="branch.id">{{ branch.branch_name }} - {{ branch.branch_location }}
+                        </option>
+                    </select>
+                 </div>
+
+                <div class="form-group mb-2">
+                    <label for="role" class="mt-3">Select Role</label>
+                    <div>
+                        <label class="mr-3">
+                            <input type="radio" formControlName="role" value="2" /> Manager
+                        </label>
+                        <label>
+                            <input type="radio" formControlName="role" value="3" /> User
+                        </label>
+                    </div>
+                </div>
 
                 <div class="form-group mb-4">
                     <label for="password" class="mt-3">Password*</label>

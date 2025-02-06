@@ -1,0 +1,219 @@
+tags:
+  - name: "Authentication & User Management"
+    description: "All authentication and user management related endpoints"
+
+paths:
+  /auth/signup:
+    post:
+      tags:
+        - "Authentication & User Management"
+      summary: "Register a new user"
+      description: "Allows a new user to sign up by providing the required details."
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "User registration details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              firstName:
+                type: "string"
+                description: "First name of the user."
+              lastName:
+                type: "string"
+                description: "Last name of the user."
+              email:
+                type: "string"
+                description: "User email address."
+              password:
+                type: "string"
+                description: "User password."
+              branch:
+                type: "string"
+                description: "Branch the user belongs to."
+              role:
+                type: "string"
+                description: "Role of the user (e.g., admin, user)."
+            required:
+              - firstName
+              - lastName
+              - email
+              - password
+              - branch
+              - role
+      responses:
+        200:
+          description: "User successfully registered."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "User registered successfully"
+        400:
+          description: "Invalid input data."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+        500:
+          description: "Internal server error."
+
+  /auth/login:
+    post:
+      tags:
+        - "Authentication & User Management"
+      summary: "Login to the application"
+      description: "Allows an existing user to login using their credentials."
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "User login details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              user:
+                type: "string"
+                description: "User email or username."
+              password:
+                type: "string"
+                description: "User password."
+            required:
+              - user
+              - password
+      responses:
+        200:
+          description: "Login successful."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Login successful"
+              token:
+                type: "string"
+                description: "JWT authentication token."
+              refreshToken:
+                type: "string"
+                description: "JWT refresh token."
+        400:
+          description: "Invalid login credentials."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+        500:
+          description: "Internal server error."
+
+  /auth/user:
+    get:
+      tags:
+        - "Authentication & User Management"
+      summary: "Get user details"
+      description: "Fetches user details from the JWT token."
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          description: "JWT token"
+          required: true
+          type: "string"
+          format: "jwt"
+      responses:
+        200:
+          description: "User details fetched successfully."
+          schema:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+                description: "User ID."
+              firstName:
+                type: "string"
+                description: "User's first name."
+              lastName:
+                type: "string"
+                description: "User's last name."
+              email:
+                type: "string"
+                description: "User's email."
+        403:
+          description: "No token provided or invalid token."
+        500:
+          description: "Internal server error."
+
+  /auth/pic:
+    post:
+      tags:
+        - "Authentication & User Management"
+      summary: "Update profile picture"
+      description: "Allows a user to update their profile picture."
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          description: "JWT token"
+          required: true
+          type: "string"
+          format: "jwt"
+        - name: "body"
+          in: "body"
+          description: "Profile picture details"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              profilePicUrl:
+                type: "string"
+                description: "URL of the new profile picture."
+              thumbnailUrl:
+                type: "string"
+                description: "URL of the new thumbnail image."
+            required:
+              - profilePicUrl
+              - thumbnailUrl
+      responses:
+        200:
+          description: "Profile picture updated successfully."
+        403:
+          description: "Token required or invalid token."
+        500:
+          description: "Error updating profile picture."
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - "Authentication & User Management"
+      summary: "Refresh the JWT token"
+      description: "Generates a new JWT token using the refresh token."
+      parameters:
+        - name: "body"
+          in: "body"
+          description: "Refresh token"
+          required: true
+          schema:
+            type: "object"
+            properties:
+              refreshToken:
+                type: "string"
+                description: "Refresh token to generate a new JWT."
+            required:
+              - refreshToken
+      responses:
+        200:
+          description: "New JWT token generated successfully."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Token generated successfully"
+              token:
+                type: "string"
+                description: "New JWT token."
+        403:
+          description: "Refresh token required."
+        500:
+          description: "Error generating new token."

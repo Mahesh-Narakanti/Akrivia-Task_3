@@ -34,10 +34,10 @@ module.exports = {
       else if (extension === "xlsx")
         contentType =
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; // For Excel files
-
+      //console.log("in file upload:"+req.body);
       const fileURL = await s3Utils.uploadToS3(
         fileContent,
-        user_id + "/product/" + req.files.uploadedFileName.name,
+        req.body.branch + "/product/" + req.files.uploadedFileName.name,
         contentType
       );
 
@@ -72,20 +72,16 @@ module.exports = {
   // List files route controller
   listFiles: async (req, res) => {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
-      if (!token) {
-        return res.status(403).send("Token Required");
-      }
-      const decoded = jwt.verify(token, "godisgreat");
-      const user_id = decoded.id;
-      const data = await s3Utils.getFileFromS3(user_id + "/product") //fileService.getFilesFromDatabase();
-      console.log(data);
+      const { branch } = req.query;
+      console.log(req.query);
+      const data = await s3Utils.getFileFromS3(branch + "/product") //fileService.getFilesFromDatabase();
+      //console.log(data);
       const files = data.Contents.map((file) => ({
         name: file.Key.split("/").pop(),
         url: `https://akv-interns.s3.ap-south-1.amazonaws.com/${file.Key}`,
         size: file.Size
       }));
-      console.log(files);
+     // console.log(files);
       // const urls = files.map((file) => file.url);
       // console.log(urls);
       res.json(files);

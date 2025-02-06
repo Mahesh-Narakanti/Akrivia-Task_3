@@ -14,15 +14,11 @@ const validateToken = (req, res, next) => {
           const error = new Error(err.name);
           error.statusCode = 401;
           return next(error);
-        }
-        else
-        {
+        } else {
           const error = new Error(err.name);
           error.statusCode = 401;
           return next(error);
-
-          }
-
+        }
       }
 
       req.user = decoded;

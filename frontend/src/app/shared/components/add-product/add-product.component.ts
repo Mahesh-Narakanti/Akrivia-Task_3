@@ -18,6 +18,7 @@ export class AddProductComponent implements OnInit {
 
   @Input() categories: any[] = [];
   @Input() vendors: any[] = [];
+  @Input() branchId?: string = '';
   @Output() closeProductModal = new EventEmitter<Boolean>();
 
   constructor(private fb: FormBuilder, private auth: AuthService,private productService:ProductService) {
@@ -54,6 +55,7 @@ export class AddProductComponent implements OnInit {
   }
 
   onSubmit(): void {
+    console.log("branch id in add product :" + this.branchId);
     if (this.productForm.valid) {
       const payload = {
         product_name: this.productForm.value.product_name,
@@ -64,6 +66,7 @@ export class AddProductComponent implements OnInit {
         unit_price: this.productForm.value.unit_price,
         product_image: '',
         full_image: '',
+        branchId:this.branchId
       };
       console.log(payload);
 

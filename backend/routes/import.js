@@ -22,9 +22,9 @@ router.post("/import", async (req, res) => {
         }
       const decoded = jwt.verify(token, "godisgreat");
       const userId = decoded.id;
-  const fileName = req.body;
+  const { fileName, branch } = req.body;
     const presignedUrl = await s3Utils.generatePresignedUrl(fileName, userId);
-
+  
 
   // Insert file metadata into the 'files' table
   const [fileRecord] = await knex("files").insert({
@@ -34,6 +34,7 @@ router.post("/import", async (req, res) => {
     total_rows: 0,
     rejected_file_s3_url: "",
     status: "Pending",
+    branch_id:branch
   });
 
   const fileId = fileRecord;

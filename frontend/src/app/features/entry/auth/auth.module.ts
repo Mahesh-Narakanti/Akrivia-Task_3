@@ -7,10 +7,11 @@ import { RegisterComponent } from '../register/register.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
+import { ForgotPasswordComponent } from '../forgot-password/forgot-password.component';
 
 
 @NgModule({
-  declarations: [LoginComponent,RegisterComponent],
+  declarations: [LoginComponent,RegisterComponent,ForgotPasswordComponent],
   imports: [
     CommonModule,
     AuthRoutingModule,

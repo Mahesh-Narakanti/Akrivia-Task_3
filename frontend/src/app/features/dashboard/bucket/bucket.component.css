@@ -34,6 +34,10 @@ input[type="checkbox"] {
     cursor: pointer;
 }
 
+.font{
+ font-family: 'Times New Roman', Times, serif;
+}
+
 /* src/app/chat/chat.component.css */
 /* Styling for the floating chat button */
 .floating-btn {
@@ -56,7 +60,7 @@ input[type="checkbox"] {
     transform: scale(1.1);
 }
 
-/* Styling for the chat container */
+/* Styling for the chat container *//* Styling for the chat container */
 .chat-container {
     position: relative;
     height: 10%;
@@ -65,20 +69,21 @@ input[type="checkbox"] {
 
 .chat-window {
     position: fixed;
-    bottom: 80px;
+    bottom: 20px;
     right: 20px;
-    width: 300px;
-    max-height: 400px;
-    background-color: #fff;
+    width: 400px;
+    max-height: 550px;
+    background: linear-gradient(135deg, #ececec, #e9ddff);
     border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
     overflow-y: auto;
     transition: transform 0.3s ease-in-out;
+    font-family: 'Arial', sans-serif;
 }
 
 .chat-window .header {
-    padding: 10px;
-    background-color: darkviolet;
+    padding: 15px;
+    background-color: #5e2c8d;
     color: white;
     display: flex;
     justify-content: space-between;
@@ -87,17 +92,68 @@ input[type="checkbox"] {
     border-top-right-radius: 10px;
 }
 
-.chat-window .header h2 {
-    margin: 0;
-    font-size: 16px;
-}
-
-.chat-window .close-btn {
+.chat-window .create-room-btn,
+.chat-window .join-room-btn {
     background-color: transparent;
     border: none;
     color: white;
-    font-size: 18px;
+    font-size: 14px;
     cursor: pointer;
+}
+
+.chat-window .back-btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.chat-type-selector button {
+    margin: 0 10px;
+    padding: 5px 15px;
+    font-size: 14px;
+    background-color: #673ab7;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.chat-type-selector button:hover {
+    background-color: #9c27b0;
+}
+
+.user-list,
+.rooms-list {
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.user-list ul,
+.rooms-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.user-list li,
+.rooms-list li {
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-list li:hover,
+.rooms-list li:hover {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 5px;
 }
 
 .messages-container {
@@ -106,7 +162,6 @@ input[type="checkbox"] {
     overflow-y: scroll;
 }
 
-/* Styling for individual chat messages */
 .message-box {
     background-color: #f1f1f1;
     border-radius: 10px;
@@ -120,33 +175,75 @@ input[type="checkbox"] {
     font-size: 14px;
 }
 
-.message-content strong {
-    color: #007bff;
-}
-
 .input-container {
     display: flex;
     padding: 10px;
     border-top: 1px solid #ddd;
+    background-color: #fff;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .input-container input {
     flex: 1;
-    padding: 8px;
-    border-radius: 5px;
+    padding: 10px;
+    border-radius: 30px;
     border: 1px solid #ddd;
     font-size: 14px;
+    margin-right: 10px;
 }
 
 .input-container button {
-    background-color: darkviolet;
+    background-color: #673ab7;
     color: white;
     border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 10px 20px;
+    border-radius: 30px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .input-container button:hover {
-    background-color: #0056b3;
+    background-color: #9c27b0;
+}
+
+.floating-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #673ab7;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.floating-btn:hover {
+    background-color: #9c27b0;
+    transform: scale(1.1);
+}
+
+/* Styling for online and offline statuses */
+.online {
+    color: green;
+    font-weight: bold;
+}
+
+.offline {
+    color: gray;
+    font-weight: normal;
+}
+
+.room-join-message {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+    text-align: center;
+    color: #6c757d;
+    border-left: 5px solid #28a745;
 }

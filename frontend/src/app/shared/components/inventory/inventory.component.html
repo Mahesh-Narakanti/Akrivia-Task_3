@@ -6,12 +6,17 @@
                 <small class="text-muted">number of Vendors {{vendors.length}}</small>
             </div>
             <div *ngIf="toggleView === 'viewAll'">
+
                 <button class="btn btn-light border btn-sm me-2" [disabled]="selectedProducts.length===0?true:false" (click)="openCartModal()">
                     <i class="bi bi-cart-fill"></i> Move to Cart
                 </button>
+                <ng-container *ngIf="userRole!='user'">
                 <button class="btn btn-light border btn-sm me-2"  (click)="downloadAll()">
                     <i class="bi bi-download"></i> Download All
                 </button>
+                </ng-container>
+
+                <ng-container *ngIf="userRole==='admin'">
                 <button class="btn btn-light border btn-sm me-2" (click)="openImportModal()">
                     <i class="bi bi-upload"></i> Import
                 </button>
@@ -20,10 +25,13 @@
                 <button class="btn btn-secondary btn-sm" (click)="showImportHistory()">
                     <i class="bi bi-clock-history"></i> History
                 </button>
+                </ng-container>
 
+                <ng-container *ngIf="userRole!='user'">
                 <button class="btn btn-violet btn-sm" (click)="openAddProductModal()">
                     <i class="bi bi-plus-circle"></i> Add Product
                 </button>
+                </ng-container>
             </div>
         </div>
 
@@ -81,7 +89,7 @@
         <table class="table table-hover">
             <thead *ngIf="toggleView === 'viewAll'">
                 <tr>
-                    <th><input type="checkbox" /></th>
+                    <th></th>
                     <th>Product Name</th>
                     <th>Status</th>
                     <th>Category</th>
@@ -155,7 +163,9 @@
                         <span *ngIf="!isEditMode(product)">{{ product.unit_price }}</span>
                         <input *ngIf="isEditMode(product)" [(ngModel)]="product.unit_price" class="form-control" />
                     </td>
+                    <ng-container *ngIf="userRole!='user'">
                     <td>
+                        
                         <button *ngIf="!isEditMode(product)" class="btn btn-light btn-sm" (click)="editProduct(product)">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -173,8 +183,9 @@
                             (click)="downloadProductPDF(product)">
                             <i class="bi bi-download"></i>
                         </button>
-
+                        
                     </td>
+                    </ng-container>
                 </tr>
             </tbody>
             <thead *ngIf="toggleView === 'cart'">
@@ -199,14 +210,17 @@
 
                     </td>
                     <td>
-                        <button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, -1)">-</button>
+
+                     <ng-container *ngIf="userRole!='user'" ><button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, -1)">-</button></ng-container>
                         <span class="quantity-display">{{ item.quantity }}</span> <!-- Quantity displayed in between -->
-                        <button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, 1)">+</button>
+                    <ng-container *ngIf="userRole!='user'"> <button class="btn btn-light btn-sm" (click)="adjustQuantityinCart(item, 1)">+</button></ng-container>
                     </td>
+                    <ng-container *ngIf="userRole!='user'">
                     <td>
                         <button class="btn btn-light btn-sm" (click)="removeFromCart(item)"><i
                                 class="bi bi-trash"></i></button>
                     </td>
+                    </ng-container>
                 </tr>
             </tbody>
 
@@ -215,10 +229,11 @@
                 <tr>
                     <th>Filename</th>
                     <th>Total Products</th>
-                    <th>Accepted Products</th>
-                    <th>Rejected Products</th>
+                    <th>Accepted</th>
+                    <th>Rejected</th>
                     <th>Status</th>
                     <th>Actions</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody *ngIf="toggleView === 'history'">
@@ -229,9 +244,14 @@
                     <td>{{ file.rejected_rows }}</td>
                     <td><span class="badge" [ngStyle]="{ color: (file.status==='Completed')?'green':((file.status=='Processing')?'orange':'blue')  }">{{ file.status }}</span></td>
                     <ng-container *ngIf="file.rejected_rows>0">
-                    <td  style="cursor: pointer;"><a [href]="file.rejected_file_s3_url" ><i class="bi bi-download"></i></a>
-                    <p (click)="showPreview(file.rejected_file_s3_url)">Preview</p></td>
+                    <td  style="cursor: pointer;"><a [href]="file.rejected_file_s3_url" ><i class="bi bi-download"></i></a></td>
+                    <td style="cursor: pointer;"><p (click)="showPreview(file.rejected_file_s3_url)">Preview</p></td>
                 </ng-container>
+                <ng-container *ngIf="file.rejected_rows==0">
+                    <td></td>
+                    <td></td>
+                </ng-container>
+
                 </tr>
             </tbody>
         </table>
@@ -333,7 +353,7 @@
                 <button type="button" class="btn-close" (click)="closeAddProductModal()"></button>
             </div>
             <div class="modal-body">
-                <app-add-product *ngIf="isAddProductModalOpen" [categories]="categories" [vendors]="vendors" 
+                <app-add-product *ngIf="isAddProductModalOpen" [categories]="categories" [vendors]="vendors"  [branchId]="branchId"
                     (closeProductModal)="closeAddProductModal()">
                 </app-add-product>
             </div>

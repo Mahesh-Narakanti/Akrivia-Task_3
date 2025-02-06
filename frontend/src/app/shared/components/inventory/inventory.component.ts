@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, Sanitizer } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, Sanitizer } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { debounceTime, map, of, Subject, switchMap } from 'rxjs';
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -41,6 +41,11 @@ export class InventoryComponent implements OnInit {
   filesData: any[] = [];
   xlsxUrl: SafeUrl | null = null;
   isPreviewOpen = false;
+  userRole = '';
+  userBranch = '';
+  branchId = '';
+
+ 
 
   constructor(
     private productService: ProductService,
@@ -59,7 +64,18 @@ export class InventoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-   this.loadProducts();
+   
+    this.auth.getUser().subscribe({
+      next: (response) => {
+        this.branchId = response.branch_id;
+        this.userBranch = response.branch;
+        this.userRole = response.role;
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.log("error getting user details: " + err);
+      }
+    })
 
     this.productService.getVendors().subscribe({
       next: (data) => {
@@ -211,7 +227,7 @@ export class InventoryComponent implements OnInit {
     let productsToDownload = this.selectedProducts;
     if (this.selectedProducts.length === 0) {
       this.productService
-        .getProducts(1, 100, this.searchQuery, this.selectedFilterColumns)
+        .getProducts(1, 100, this.searchQuery, this.selectedFilterColumns,this.branchId)
         .subscribe({
           next: (data) => {
             this.beginDownload(data.products);
@@ -252,6 +268,7 @@ export class InventoryComponent implements OnInit {
   }
 
   closeAddProductModal(): void {
+    this.loadProducts();
     this.isAddProductModalOpen = false; // Close modal
   }
 
@@ -345,7 +362,7 @@ export class InventoryComponent implements OnInit {
       alert('File uploaded. The background process has started.');
       this.isImportModalOpen = false;
       const fileName = this.importFile.name;
-      this.productService.addProducts(this.importFile,fileName).subscribe({
+      this.productService.addProducts(this.importFile,fileName,this.branchId).subscribe({
         next: (response) => {
           console.log(fileName);
          // this.productService.addFiles(fileName);
@@ -625,7 +642,8 @@ export class InventoryComponent implements OnInit {
         this.currentPage,
         this.pageSize,
         this.searchQuery,
-        this.selectedFilterColumns
+        this.selectedFilterColumns,
+        this.branchId
       )
       .subscribe({
         next: (data) => {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from  '@angular/common/http'
+import {HttpClient, HttpParams} from  '@angular/common/http'
 import { catchError, map, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
@@ -12,9 +12,11 @@ export class AuthService {
     firstName: string,
     lastName: string,
     email: string,
-    password: string
+    password: string,
+    branch: string,
+    role: string
   ): Observable<any> {
-    const data = { firstName, lastName, email, password };
+    const data = { firstName, lastName, email, password, branch, role };
     return this.http.post('http://localhost:3000/auth/signup', data);
   }
 
@@ -65,12 +67,30 @@ export class AuthService {
   }
 
   refreshToken(): Observable<any> {
-    return this.http
-      .post<{ token: string }>(
-        `http://localhost:3000/auth/refresh-token`,
-        {
-          refreshToken: sessionStorage.getItem('refreshToken'),
-        }
-      );
+    return this.http.post<{ token: string }>(
+      `http://localhost:3000/auth/refresh-token`,
+      {
+        refreshToken: sessionStorage.getItem('refreshToken'),
+      }
+    );
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post('http://localhost:3000/mail/forgot-password', {
+      email,
+    });
+  }
+
+  getUsers(userBranch: any): Observable<any> {
+    let params = new HttpParams();
+    params = params.append('branch', userBranch!);
+    return this.http.get('http://localhost:3000/auth/getUsers', { params });
+  }
+
+  updateUserRole(userId: number, roleId: number): Observable<any> {
+    return this.http.put('http://localhost:3000/auth/editUser', {
+      role_id: roleId,
+      user_id:userId
+    });
   }
 }

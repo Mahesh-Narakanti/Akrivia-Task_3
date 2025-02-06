@@ -1,9 +1,18 @@
 <div class="main-container bg-light">
     <header class="bg-white d-flex justify-content-between align-items-center px-3 py-3 border-bottom shadow-sm">
         <div class="logo">
+            <ng-container *ngIf="!editUser">
+                <h4><i class="bi bi-box-seam me-2 text-primary"></i>Inventory Dashboard</h4>
+            </ng-container>
+            <ng-container *ngIf="editUser">
+                <h4><i class="bi me-2 text-primary"></i>User Management</h4>
+                <button class="btn btn-link" (click)="closeEdit()">
+                    <i class="bi bi-arrow-left-circle"></i> Go Back
+                </button>
 
-            <h4><i class="bi bi-box-seam me-2 text-primary"></i>Inventory Dashboard</h4>
+            </ng-container>
         </div>
+
         <div class="dropdown">
             <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" id="userDropdown"
                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -11,14 +20,18 @@
                     class="rounded-circle me-2" />
                 <div class="d-flex flex-column">
                     <span>{{ userData.username }}</span>
-                    <small class="text-muted">{{ userData.email }}</small>
+                    <small class="text-muted">{{ userData.email }} ({{userData.role}})</small>
                 </div>
             </button>
             <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                <li><button class="dropdown-item" (click)="updateProfile()">Update Profile</button></li>
+                <li><button class="dropdown-item" (click)="updateProfile()">Update Profile Picture</button></li>
                 <li><button class="dropdown-item" (click)="logout()">Logout</button></li>
+                <li><button class="dropdown-item" (click)="editUsers()">
+                        Edit Users <i class="bi bi-pencil"></i>
+                    </button></li>
             </ul>
         </div>
+
     </header>
 
     <!-- Modal for File Upload -->
@@ -45,14 +58,21 @@
         </div>
     </div>
 
-    <div class="container-fluid mt-4 bg-light">
-        <div class="row">
-            <div class="col-md-9">
-                <app-inventory></app-inventory>
-            </div>
-            <div class="col-md-3">
-                <app-bucket></app-bucket>
+    <ng-container *ngIf="!editUser">
+        <div class="container-fluid mt-4 bg-light">
+            <div class="row">
+                <div class="col-md-9">
+                    <app-inventory></app-inventory>
+                </div>
+                <div class="col-md-3">
+                    <app-bucket></app-bucket>
+                </div>
             </div>
         </div>
-    </div>
+    </ng-container>
+    <ng-container *ngIf="editUser">
+        <div class="container-fluid mt-4 bg-light">
+            <app-user-edit [user]="userData"></app-user-edit>
+        </div>
+    </ng-container>
 </div>

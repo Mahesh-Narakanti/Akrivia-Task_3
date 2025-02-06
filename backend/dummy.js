@@ -37,17 +37,32 @@ const vendors = [
 function generateRow() {
   const productName = faker.commerce.productName();
   const category = categories[Math.floor(Math.random() * categories.length)];
-  const vendor = vendors[Math.floor(Math.random() * vendors.length)];
   const quantity = faker.number.int({ min: 1, max: 100 }); // Random quantity
   const unitPrice = faker.commerce.price(); // Random price
 
   // 10% chance of having missing or empty fields
   const shouldHaveEmptyField = Math.random() < 0.1;
 
+    const numberOfVendors = Math.floor(Math.random() * 3) + 1; // Random number between 1 and 3
+    const productVendors = [];
+
+    for (let i = 0; i < numberOfVendors; i++) {
+      const vendor = vendors[Math.floor(Math.random() * vendors.length)];
+
+      // To avoid duplicate vendors for a single product
+      if (!productVendors.includes(vendor)) {
+        productVendors.push(vendor);
+      }
+  }
+  
+  let vendorss = '';
+  for (const vendor of productVendors)
+    vendorss += vendor + ",";
+vendorss = vendorss.slice(0, vendorss.length - 1);
   return {
     "Product Name": shouldHaveEmptyField ? "" : productName,
     Category: shouldHaveEmptyField ? "" : category,
-    "Vendor Name": shouldHaveEmptyField ? "" : vendor,
+    "Vendor Name": shouldHaveEmptyField ? "" : vendorss,
     Quantity: shouldHaveEmptyField ? "" : quantity,
     "Unit Price": shouldHaveEmptyField ? "" : unitPrice,
   };
@@ -55,7 +70,7 @@ function generateRow() {
 
 // Generate 5000 rows
 const rows = [];
-for (let i = 0; i < 50000; i++) {
+for (let i = 0; i < 20000; i++) {
   rows.push(generateRow());
 }
 
@@ -80,7 +95,7 @@ const wb = {
 };
 
 // Write the file to disk
-XLSX.writeFile(wb, "dummy_data-50000.xlsx");
+XLSX.writeFile(wb, "dummy_data-20000.xlsx");
 
 console.log(
   "Excel file with dummy data generated: dummy_data_with_more_vendors.xlsx"

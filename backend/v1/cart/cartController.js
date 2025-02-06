@@ -17,11 +17,11 @@ module.exports = {
         return res.status(403).send("Token Required");
       }
 
-      const user_id = await cartService.verifyTokenAndGetUserId(token);
+      const { user_id, role } = await cartService.verifyTokenAndGetUserId(token);
       if (!user_id) {
         return res.status(400).json({ message: "Invalid user" });
       }
-
+      
       // Proceed with adding items to cart
       await cartService.addItemsToCart(user_id, itemsToSend);
       res.status(200).json({ message: "Items added to cart successfully" });
@@ -43,8 +43,8 @@ module.exports = {
     }
 
     try {
-      const user_id = await cartService.verifyTokenAndGetUserId(token);
-      const cartItems = await cartService.getCartItems(user_id);
+      const { user_id, role } = await cartService.verifyTokenAndGetUserId(token);
+      const cartItems = await cartService.getCartItems(user_id,role);
       res.json(cartItems);
     } catch (error) {
       logger.error(error);

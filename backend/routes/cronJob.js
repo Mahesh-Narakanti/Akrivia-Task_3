@@ -42,7 +42,7 @@ const productSchema = Joi.object({
   }),
 });
 
-async function validateProducts(productsData) {
+ async function validateProducts(productsData,branch_id) {
   const validProducts = [];
   const errors = [];
   let count = 0;
@@ -95,6 +95,21 @@ async function validateProducts(productsData) {
       }
       val = false;
     }
+    if (product.product_name) {
+      const isThere = await knex("products")
+        .where("product_name", product.product_name)
+        .andWhereNot("status", "deleted")
+        .andWhere("branch_id", branch_id)
+        .first();
+      if (isThere) {
+        errors = [];
+        errors.push({
+          ...product,
+          error: `Duplicate Product  found`,
+        });
+        val = false;
+      }
+    }
     if (val) validProducts.push(product);
   }
   return { validProducts, errors };
@@ -145,6 +160,8 @@ function startCronJob(io) {
     categoryMap = new Map(
       categories.map((cat) => [cat.category_name, cat.category_id])
     );
+    //[categoryname,categoryid],[categorya,catid]
+    //{categoryname:categoryid,categoryA:catid,categoryB:catid}
     vendorMap = new Map(
       vendors.map((vendor) => [vendor.vendor_name, vendor.vendor_id])
     );
@@ -177,14 +194,15 @@ function startCronJob(io) {
       console.log("time taken= " + (endTime - startTime) / 1000);
       startTime = Date.now();
 
-      const { validProducts, errors } = await validateProducts(productsData);
+      const { validProducts, errors } = await validateProducts(productsData,file.branch_id);
 
       endTime = Date.now();
       console.log("time taken= " + (endTime - startTime) / 1000);
       startTime = Date.now();
       // console.log(productsData);
       //await processFile(file, validProducts); // Process the file directly
-      const chunkedData = chunkArray(validProducts, 1000);
+      const
+        chunkedData = chunkArray(validProducts, 1000);
 
       const concurrencyLimit = 500; // Number of concurrent chunks to process
 
@@ -237,6 +255,15 @@ async function processFile(file, productsData) {
 
   for (const product of productsData) {
     
+    const isThere = await knex("products")
+      .where("product_name", product.product_name)
+      .andWhereNot("status", "deleted")
+      .andWhere("branch_id", file.branch_id)
+      .first();
+    if (isThere)
+    {
+
+    }
     const [productId] = await knex("products").insert({
       product_name: product.product_name,
       category_id: categoryMap.get(product.category_name),
@@ -244,6 +271,7 @@ async function processFile(file, productsData) {
       unit_price: product.unit_price,
       product_image: product.product_image || "default_image.jpg",
       status: "active",
+      branch_id:file.branch_id
     });
     // console.log(productId);
     insertedProducts.push({ product_id: productId });
@@ -264,7 +292,7 @@ async function processFile(file, productsData) {
 async function getFilesToProcess() {
   return await knex("files")
     .where("status", "Pending")
-    .select("id", "user_id", "file_name", "file_url");
+    .select("id", "user_id", "file_name", "file_url","branch_id");
 }
 
 // Function to simulate reading product data from an S3-hosted file
